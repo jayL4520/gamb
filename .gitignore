@@ -1,0 +1,5 @@
+node_modules
+*.zip
+*dist
+*unpackage
+/linwaIJIAOYIS-test/node_modules
