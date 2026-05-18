@@ -11,23 +11,60 @@ const menuList = [
   {
     name: "澳门六合彩",
     code: "MO",
+    _code: "lal",
     liveUrl: "https://play8398.lianwin88.com/live/mosixmark.flv",
     url: "/mark/MO",
+    data:{
+      lotCode: "lal",
+      ltype: 2
+    },
+    openTime: "21:32-21:38",
+    _openTime: "21:30-21:36",
   },
   {
     name: "新澳门六合彩",
     code: "XMO",
-     liveUrl: "https://play3833366.is-spec.com/live/mosixmark.flv",
+    data:{
+      lotCode: "xal",
+      ltype: 3
+    },
+    liveUrl: "https://play3833366.is-spec.com/live/mosixmark.flv",
     url: "/mark/XMO",
+    // 21:33-21:38 
+    openTime: "21:33-21:38",
+    _openTime: "21:30-21:36",
+    /**{msg: "老澳门六合彩", status: true, start: "2026-05-18 21:32:00", end: "2026-05-18 21:38:00"}
+end
+: 
+"2026-05-18 21:38:00"
+msg
+: 
+"老澳门六合彩"
+start
+: 
+"2026-05-18 21:32:00"
+status
+: 
+true */
   },
   {
     name: "香港六合彩",
     code: "HK",
+    _code: "gal",
+    data:{
+      lotCode: "gal",
+      ltype: 2
+    },
     liveUrl: "https://vdm6-hw.nbgdsygs.com/live/h6-2.flv",
+    openTime: "21:32-21:40",
     url: "/mark/HK",
   },
    {
     name: "快乐8",
+    // data:{
+    //   lotCode: "lal",
+    //   ltype: 3
+    // },
     code: "kl8",
     url: "/markKa/kl8",
   },
