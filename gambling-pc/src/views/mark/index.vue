@@ -3,7 +3,6 @@
     <div
       class="bg-white flex rounded-[1rem] h-[11rem] my-[1rem] items-center py-[1.5rem]"
     >
-
       <div class="px-[1.5rem] w-[50%] h-full">
         <div class="flex items-end">
           <div class="text-black font-bold text-[1.2rem]/[2rem] mr-[10px]">
@@ -17,18 +16,20 @@
             >
           </div>
         </div>
-        <ul class="flex mt-[1rem]" v-if=" winresultsinfo.ball.length">
-          <transition-group name="fade" class="flex"   tag="div">
+     
+        <ul class="flex mt-[1rem]" v-if="winresultsinfo.ball">
+              
+          <transition-group name="fade" class="flex items-center"   tag="div">
             <li
               class="flex flex-col items-center mr-[1.2rem]"
-              v-for="(item, index) in 'OK2345'.split('')"
+              v-for="(item, index) in '正在准备开奖'.split('')"
               :key="index"
               :class="{ 'animated-ball':  winresultsinfo.ball[index]?.animated }" 
             ><!-- 动态绑定动画类 -->
               <div
                 class="text-white text-[1.2rem] w-[2.1rem] h-[2.1rem] flex items-center justify-center rounded-full"
                 :class="`${
-                showLive&&(winresultsinfo.ball[index]?.sb)?'bg-gray-400':
+               isOpen()&&!winresultsinfo.ball[index]?.num ?'bg-gray-400':
                winresultsinfo.ball[index]?.sb == 'red'
                     ? 'bg-rose-600'
                     : winresultsinfo.ball[index]?.sb == 'blue'
@@ -37,20 +38,22 @@
                   
                 }`"
               >
-                {{  winresultsinfo.ball[index]?.num|| item }}
+     
+                {{   winresultsinfo.ball[index]?.num || item }}
               </div>
-              <div class="text-[gray] text-[1rem] mt-[0.5rem]">{{  winresultsinfo.ball[index]?.sx }}</div>
+              <div  class="text-[gray] text-[1rem] mt-[0.5rem]">{{  winresultsinfo.ball[index]?.sx||'-' }}</div>
             </li>
           </transition-group>
      
         <!-- </ul>
         <ul class="flex mt-[1rem]"> -->
+        
           <li class="text-[2rem]">+</li>
-          <li class="flex flex-col items-center ml-[0.8rem]">
+          <li class="flex flex-col items-center justify-center ml-[0.8rem]">
             <div
               class="text-white text-[1.2rem] w-[2.1rem] h-[2.1rem] flex items-center justify-center rounded-full"
               :class="`${
-               showLive&&(!winresultsinfo.lastBall?.num|| winresultsinfo.lastBall?.sb=='')?'bg-gray-400': 
+                isOpen()||!winresultsinfo.lastBall?'bg-gray-400': 
                 winresultsinfo.lastBall?.sb == 'red'
                   ? 'bg-rose-600'
                   : winresultsinfo.lastBall?.sb == 'blue'
@@ -58,17 +61,18 @@
                 'bg-green-500'
               }`"
             >
-              {{ winresultsinfo.lastBall?.num || '快' }}
+          
+             {{ [0,2].includes(+winresultsinfo.status)?winresultsinfo.lastBall?.num||'中' : '中' }}
             </div>
             <div class="text-[gray] text-[1rem] mt-[0.5rem]">
-              {{ winresultsinfo.lastBall?.sx }}
+              {{ winresultsinfo.lastBall?.sx||'-' }}
             </div>
           </li>
         </ul>
       </div>
       <div class="w-[1px] h-[5rem] bg-slate-200"></div>
       <div class="w-[50%] px-[1.5rem] h-full flex justify-between items-center ">
-        <div v-if="!showLive">
+        <div v-if="!isOpen()" >
           <div class="text-[0.8rem]/[1.6rem] text-[#666]">
             距<span class="text-[red] px-[5px]"
               >{{ nextwinresultst.year }}{{ nextwinresultst.period }}</span
@@ -97,7 +101,7 @@
             秒
           </div>
         </div>
-        <div v-else
+        <div v-else-if="isOpen()"
               class="w-[8.5rem] h-[2.5rem] bg-[#20b0cd] flex justify-center items-center text-white mx-[5px] margR20"
             >
               {{'开奖中...' }}
@@ -275,6 +279,7 @@
       :title="playbackinfo.dialogVisibleTitle"
       max-width="50rem"
     >
+
       <div class="w-full h-auto shadow-lg min-h-[25rem]">
         <!-- controlsList="nodownload nofullscreen noremoteplayback disablePictureInPicture" 隐藏全屏... -->
         <video
@@ -292,7 +297,7 @@
         <!-- <iframe v-else style="height:100%;width:100%;border:none;" scrolling="no" src="https://135ka.com/index.php/index/lhc_video.html?t=xal"></iframe> -->
         <div v-else style="width:100%;height:565px;background-color:black;position:relative;" id="live_div">
 			<div style="position:absolute;top:40%;width:100%;height:45px;line-height:45px;color:white;text-align:center;font-size:18px;" id="live_tip">
-				<span class="unicode_key"> {{codeToLottery(winresultsinfo.lotteryType)}}</span><input type="hidden" :value="codeToLottery(winresultsinfo.lotteryType)"><span class="unicode_key">搅珠</span><input type="hidden" value="搅珠">直播时间为<span class="unicode_key">开奖</span><input type="hidden" value="开奖">日 <span style="color:red;">{{indMenu?.openTime}}</span> (<span class="unicode_key">北京</span><input type="hidden" value="北京">时间)
+				<span class="unicode_key"> {{codeToLottery(winresultsinfo.lotteryType)}}</span><input type="hidden" :value="codeToLottery(winresultsinfo.lotteryType)"><span class="unicode_key">搅珠</span><input type="hidden" value="搅珠">直播时间为<span class="unicode_key">开奖</span><input type="hidden" value="开奖">日 <span style="color:red;">21:32-21:38</span> (<span class="unicode_key">北京</span><input type="hidden" value="北京">时间)
 			</div>
 		</div>
       
@@ -317,7 +322,7 @@ const categoryId = ref(route.params.id);
 const year = ref(new Date(new Date().getFullYear(), 0));
 const nowyear = ref(new Date(new Date().getFullYear(), 0));
 const nextwinresultst = ref({});
-const winresultsinfo = ref({ball:[]});
+const winresultsinfo = ref({});
 const loading = ref(false);
 const tableLoading = ref(false);
 console.log("sdddd",settingMer)
@@ -338,13 +343,13 @@ const resultslist = ref([]);
 const tableRef = ref();
 const dialogVisible = ref(false);
 const playbackinfo = ref({});
+const lastBall = ref('');
 let isRef = ref(false)
 const indMenu = computed(() => {
   return settingMer.menuList.find((e) => e.code === categoryId.value) || {};
 });
 const hasNewIndex = ref(-1); // 记录最新号码的索引
 const getNewData = async () => {
-  // indMenu.value.data?indMenu.value.data
   loading.value = true;
   const res = await getNewDataApi({
     year: year.value.getFullYear(),
@@ -357,38 +362,34 @@ const getNewData = async () => {
       if (x.status == 0) {
         nextwinresultst.value = x;
         countdownTimeStr(nextwinresultst.value.date);
-      } else if (x.status == 1) {
+      } else {
+    
         let numberarr = x.numbers.split(",");
         let sbarr = x.sb.split(",");
         let sxarr = x.sx.split(",");
         let ball = [];
-        console.log("sdddd",numberarr,sbarr,sxarr)
-        hasNewIndex.value = numberarr.length-2;
-        
+        hasNewIndex.value = numberarr.length-1;
         numberarr.forEach((j, i) => {
-         // 记录最新号码的索引
           ball.push({
             num: j,
             sb: sbarr[i],
             sx: sxarr[i],
-            animated: false, // 初始化动画标记为 false
           });
         });
-        x.lastBall = ball.pop();
-        x.ball = ball;
-        winresultsinfo.value = x;
-
-        // 触发动画
-        if (showLive.value && hasNewIndex.value !== -1) {
-          nextTick(() => {
-            // winresultsinfo.value.ball.forEach((_, index) => {
-                   console.log("sdddd", hasNewIndex.value,  winresultsinfo.value.ball)
-              // setTimeout(() => {
-              // winresultsinfo.value.ball[hasNewIndex.value].animated = true; // 按顺序触发动画
-              // },  hasNewIndex.value*500); // 每个球延迟 500ms
-            // });
-          });
+        console.log("sdddd==", hasNewIndex.value,  winresultsinfo.value.ball)
+            x.ball = ball;
+           winresultsinfo.value = x;
+        if(isOpen()&&!ball[0].num&&!winresultsinfo.value.lastBall){
+           // 触发动画
+        }else if(ball?.length==7){
+          // lastBall.value = ball[ball.length - 1];
+          winresultsinfo.value.lastBall = ball[ball.length - 1];
         }
+        
+    
+       console.log("sf",winresultsinfo.value,x,numberarr)
+
+
       }
     });
   } else {
@@ -409,10 +410,13 @@ const logo = computed(()=>{
   console.log("sd",url,winresultsinfo.value)
   return url 
 })
-const isOpen = ()=>{
+const opening = computed(()=>{
+  return +winresultsinfo.value.status ==1&&winresultsinfo.value.ball&&winresultsinfo.value.ball.length<6
+})
+const isOpen = (K='_openTime')=>{
   let open = false
-  if(indMenu.value._openTime){
-    let timeArr = indMenu.value._openTime.split("-");
+  if(indMenu.value[K]){
+    let timeArr = indMenu.value[K].split("-");
     if(timeArr.length==2){
       let start = timeArr[0].split(":");
       let end = timeArr[1].split(":");
@@ -420,33 +424,34 @@ const isOpen = ()=>{
       let startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), start[0], start[1]);
       let endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), end[0], end[1]);
       open = now >= startTime && now <= endTime;
+      console.log("isOpen",open,indMenu.value[K],startTime,endTime)
     }
+     
   }
-  return open
+ 
+  return open && opening.value
 }
 const showLive = computed(()=>{
   let isShow  = false
-  // nextwinresultst.value.status = 1
-  let t = new Date(nextwinresultst.value.date*1000).getTime() ;
-  let lic = Date.now() - t;
-  console.log("sd==",lic,new Date(t),winresultsinfo.value.status==1,nextwinresultst.value)
-  let show = isOpen();  
-  console.log("sd",nextwinresultst.value.date,show)
+  let lic = Date.now() - new Date(nextwinresultst.value.date);
 
-  isShow = show
+  let show = +winresultsinfo.value.status==1;  
+    console.log("sd==",show)
+  if(show){
+     isShow = true
     // setTimeout(()=>{
     //   isShow = false
     // },4000)
-  
+  }
  return isShow
 })
 const getdatalist = async   () => {
 
-  tableLoading.value = isRef.value;
+  tableLoading.value = true;
   const res = await datalistApi({
     year: year.value.getFullYear(),
     lotteryType: categoryId.value,
-    status: 1,
+    status: 2,
     pageNum: pageNum.value,
     pageSize: pageSize.value,
   });
@@ -526,6 +531,16 @@ const playback = (item) => {
 // 倒计时
 const countdownTimeStr = (timestamp) => {
   clearInterval(timer.value);
+  if (countdownTime.value.length > 0) {
+    if (
+      countdownTime.value[0] == "00" &&
+      countdownTime.value[1] == "00" &&
+      countdownTime.value[2] == "00"
+    ) {
+      clearInterval(timer.value);
+      segmentedChange();
+    }
+  }
   timer.value = setInterval(() => {
     let now = Date.now();
     let diff = Math.max(0, timestamp * 1000 - now);
@@ -534,14 +549,6 @@ const countdownTimeStr = (timestamp) => {
     const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
     const s = String(total % 60).padStart(2, "0");
     countdownTime.value = [h, m, s];
-
-    // 倒计时结束后刷新数据
-    if (total <= 0) {
-      clearInterval(timer.value);
-      segmentedChange(1); // 刷新数据
-    }
-    // console.log("sd=====",isOpen())
-    
   }, 1000);
 };
 
@@ -554,8 +561,8 @@ onMounted(() => {
        setInterval(()=>{
         segmentedChange(1); // 刷新数据
         
-      },isOpen()?2000:60000)
-    }, 1000);
+      },isOpen()?5000:60000)
+    }, 2000);
   //   nextTick(() => {
   //   });
 });
@@ -568,6 +575,7 @@ onUnmounted(() => clearInterval(timer.value));
     padding: 10px;
     border-left: 1px solid #f0f0f0;
 }
+
 
 .animated-ball {
   animation: fadeInScale 0.5s ease-out forwards;
