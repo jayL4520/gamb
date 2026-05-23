@@ -3,3 +3,5 @@ node_modules
 *dist
 *unpackage
 /linwaIJIAOYIS-test/node_modules
+*副本*
+*.rar

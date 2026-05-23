@@ -1,3 +1,4 @@
+import * as lunar from 'chinese-lunar';
 export const codeToLottery = (code) => {
 	// 代码与地区名称映射表
 	const regionMap = {
@@ -116,4 +117,89 @@ export const formatTimestamp2 = (val) => {
 export const oddEven = (val) => {
 	const n = Number(val);
 	return isNaN(n) ? '' : (n % 2 === 0 ? '双' : '单');
+};
+export function weishuliang(n) {
+  let nw = n.map(x => x.toString().slice(-1))
+  //console.log("weishuliang",nw)
+  return (new Set(nw)).size
+}
+export function sxliang(n, Zodica) {
+  //console.log("Zodica",Zodica,n)
+  let nw = n.map(x => Zodica[+x])
+
+  //console.log("sxliang",nw,n,Zodica)
+  return (new Set(nw)).size
+
+}
+
+// 十二生肖顺序
+export const ZODIAC_LIST = [
+  '鼠', '牛', '虎', '兔', '龙', '蛇',
+  '马', '羊', '猴', '鸡', '狗', '猪'
+];
+// 获取当前日期的农历年份
+const getLunarYear = (timestamp) => {
+  const date = new Date(timestamp); // timestamp → Date
+//   console.log(date, timestamp);
+
+  const lunarDate = lunar.solarToLunar(date);
+  return lunarDate.year
+};
+export function getZodiacsObj(targetYear) {
+  targetYear = targetYear ? targetYear : new Date().getTime()
+  // 1. 生肖固定顺序
+  const ZODIAC_ORDER = ZODIAC_LIST;
+
+  targetYear = getLunarYear(targetYear)
+//   console.log("targetYear", targetYear)
+  // 2. 计算当前生肖索引（核心修正！）
+  const currentIndex = (targetYear - 2025) % 12; // 2025蛇年=5
+  const normalizedIndex = currentIndex < 0 ? currentIndex + 12 : currentIndex;
+
+  // 3. 生成号码（分两组处理）
+  const result = {};
+  const resultAll = {};
+  // 第一组：鼠(6)到蛇(1)
+  for (let i = 0; i < 6; i++) {
+    let zodiac = String(ZODIAC_ORDER[(normalizedIndex + i) % 12])
+    const baseNum = 6 - i; // 鼠=6, 牛=5,..., 蛇=1
+    result[zodiac] = [baseNum, baseNum + 12, baseNum + 24, baseNum + 36].filter(n => n <= 49);
+
+    if (result[zodiac].includes(1)) result[zodiac].push(49); // 仅蛇年加49
+    result[zodiac].forEach((n) => resultAll[String(n)] = zodiac);
+  }
+
+  // 第二组：马(12)到猪(7)
+  for (let i = 6; i < 12; i++) {
+    // .padStart(2, "0");
+    let zodiac = String(ZODIAC_ORDER[(normalizedIndex + i) % 12])
+    const baseNum = 12 - (i - 6); // 马=12, 羊=11,..., 猪=7
+    result[zodiac] = [baseNum, baseNum + 12, baseNum + 24, baseNum + 36].filter(n => n <= 49);
+    if (result[zodiac].includes(1)) result[zodiac].push(49); // 仅蛇年加49
+    result[zodiac].forEach((n) => resultAll[n] = zodiac);
+  }
+
+  return {
+    year: targetYear,
+    numbersAll: resultAll,
+    currentZodiac: ZODIAC_ORDER[normalizedIndex],
+    numbers: result,
+    ...resultAll
+  };
+}
+
+export const ColorDict = {
+  red: [
+    "01", "02", "07", "08", "12", "13", "18", "19",
+    "23", "24", "29", "30", "34", "35", "40", "45", "46"
+  ],
+  blue: [
+    "03", "04", "09", "10", "14", "15", "20", "25",
+    "26", "31", "36", "37", "41", "42", "47", "48"
+  ],
+  green: [
+    "05", "06", "11", "16", "17", "21", "22", "27",
+    "28", "32", "33", "38", "39", "43", "44", "49"
+  ]
+
 };

@@ -38,13 +38,19 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 5175
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://127.0.0.1:8000',
-    //     changeOrigin: true,
-    //   }
-    // }
+    port: 5175,
+    proxy: {
+      // https://apiam.ad771.cn/Lot_34/Draw/NextDrawingTime
+      '/moapi': {
+        target: 'https://api.00853lhc.com/api',
+        rewrite: (path) => path.replace(/^\/moapi/, ''),
+        changeOrigin: true,
+      },
+       '/xmoapi': {
+        target: 'https://apiam.ad771.cn',
+        changeOrigin: true,
+      }
+    }
   },
   build: {
     minify: 'terser', // 是否进行压缩,boolean | 'terser' | 'esbuild',默认使用terser

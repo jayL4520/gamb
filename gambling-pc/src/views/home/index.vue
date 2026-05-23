@@ -111,7 +111,7 @@ const amGetNewData = async () => {
       if (x.status == 0) {
         aminfo.nextwinresultst = x;
         aminfo.value = countdownTimeStr(aminfo);
-      } else if (x.status == 1) {
+      } else if (x.status == 2) {
         let numberarr = x.numbers.split(",");
         let sbarr = x.sb.split(",");
         let sxarr = x.sx.split(",");
@@ -151,7 +151,7 @@ const xgGetNewData = async () => {
       if (x.status == 0) {
         xginfo.nextwinresultst = x;
         xginfo.value = countdownTimeStr(xginfo);
-      } else if (x.status == 1) {
+      } else if (x.status == 2) {
         let numberarr = x.numbers.split(",");
         let sbarr = x.sb.split(",");
         let sxarr = x.sx.split(",");

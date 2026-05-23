@@ -3,6 +3,7 @@
     <div
       class="bg-white flex rounded-[1rem] h-[11rem] my-[1rem] items-center py-[1.5rem]"
     >
+
       <div class="px-[1.5rem] w-[50%] h-full">
         <div class="flex items-end">
           <div class="text-black font-bold text-[1.2rem]/[2rem] mr-[10px]">
@@ -16,20 +17,19 @@
             >
           </div>
         </div>
-     
-        <ul class="flex mt-[1rem]" v-if="winresultsinfo.ball">
-              
-          <transition-group name="fade" class="flex items-center"   tag="div">
+       
+        <ul class="flex mt-[1rem]" v-if=" winresultsinfo.ball">
+          <transition-group name="fade" class="flex"   tag="div">
             <li
               class="flex flex-col items-center mr-[1.2rem]"
-              v-for="(item, index) in '正在准备开奖'.split('')"
+              v-for="(item, index) in '正准备开奖'.split('')"
               :key="index"
               :class="{ 'animated-ball':  winresultsinfo.ball[index]?.animated }" 
             ><!-- 动态绑定动画类 -->
               <div
                 class="text-white text-[1.2rem] w-[2.1rem] h-[2.1rem] flex items-center justify-center rounded-full"
                 :class="`${
-               isOpen()&&!winresultsinfo.ball[index]?.num ?'bg-gray-400':
+                isOpen('openTime')&&(winresultsinfo.ball[index]?.sb)?'bg-gray-400':
                winresultsinfo.ball[index]?.sb == 'red'
                     ? 'bg-rose-600'
                     : winresultsinfo.ball[index]?.sb == 'blue'
@@ -38,22 +38,20 @@
                   
                 }`"
               >
-     
-                {{   winresultsinfo.ball[index]?.num || item }}
+                {{  winresultsinfo.ball[index]?.num|| item }}
               </div>
-              <div  class="text-[gray] text-[1rem] mt-[0.5rem]">{{  winresultsinfo.ball[index]?.sx||'-' }}</div>
+              <div class="text-[gray] text-[1rem] mt-[0.5rem]">{{  winresultsinfo.ball[index]?.sx }}</div>
             </li>
           </transition-group>
      
         <!-- </ul>
         <ul class="flex mt-[1rem]"> -->
-        
           <li class="text-[2rem]">+</li>
-          <li class="flex flex-col items-center justify-center ml-[0.8rem]">
+          <li class="flex flex-col items-center ml-[0.8rem]">
             <div
               class="text-white text-[1.2rem] w-[2.1rem] h-[2.1rem] flex items-center justify-center rounded-full"
               :class="`${
-                isOpen()||!winresultsinfo.lastBall?'bg-gray-400': 
+               showLive&&(!winresultsinfo.lastBall?.num|| winresultsinfo.lastBall?.sb=='')?'bg-gray-400': 
                 winresultsinfo.lastBall?.sb == 'red'
                   ? 'bg-rose-600'
                   : winresultsinfo.lastBall?.sb == 'blue'
@@ -61,18 +59,17 @@
                 'bg-green-500'
               }`"
             >
-          
-             {{ [0,2].includes(+winresultsinfo.status)?winresultsinfo.lastBall?.num||'中' : '中' }}
+              {{ winresultsinfo.lastBall?.num || '中' }}
             </div>
             <div class="text-[gray] text-[1rem] mt-[0.5rem]">
-              {{ winresultsinfo.lastBall?.sx||'-' }}
+              {{ winresultsinfo.lastBall?.sx }}
             </div>
           </li>
         </ul>
       </div>
       <div class="w-[1px] h-[5rem] bg-slate-200"></div>
       <div class="w-[50%] px-[1.5rem] h-full flex justify-between items-center ">
-        <div v-if="!isOpen()" >
+        <div v-if="!isOpen()">
           <div class="text-[0.8rem]/[1.6rem] text-[#666]">
             距<span class="text-[red] px-[5px]"
               >{{ nextwinresultst.year }}{{ nextwinresultst.period }}</span
@@ -200,23 +197,22 @@
               </ul>
             </template>
           </el-table-column>
-          
-            <el-table-column label="生肖量" align="center" width="80">
+          <el-table-column label="尾数" align="center">
+            <el-table-column label="大小" align="center" width="80">
               <template #default="scope">
                 <div class="text-center">
-            
-                  {{ sxliang([...scope.row.ball.map(e=>e.num), scope.row.lastBall?.num], getZodiacsObj(scope.row.date*1000)) }}
+                  {{ scope.row.lastNum >= 25 ? "大" : "小" }}
                 </div>
               </template>
             </el-table-column>
-            <el-table-column label="尾数量" align="center" width="80">
+            <el-table-column label="单双" align="center" width="80">
               <template #default="scope">
                 <div class="text-center">
-                  {{ weishuliang([...scope.row.ball.map(e=>e.num), scope.row.lastBall?.num]) }}
+                  {{ oddEven(scope.row.lastNum) }}
                 </div>
               </template>
             </el-table-column>
-      
+          </el-table-column>
           <el-table-column label="总和" align="center">
             <el-table-column label="数量" align="center" width="80">
               <template #default="scope">
@@ -280,7 +276,6 @@
       :title="playbackinfo.dialogVisibleTitle"
       max-width="50rem"
     >
-
       <div class="w-full h-auto shadow-lg min-h-[25rem]">
         <!-- controlsList="nodownload nofullscreen noremoteplayback disablePictureInPicture" 隐藏全屏... -->
         <video
@@ -294,12 +289,11 @@
         >
           您的浏览器不支持视频播放。
         </video>
-        <!-- <iframe data-v-98da589e="" width="746.6666666666666" height="420" src="/player/index.html?url=https://play8398.lianwin88.com/live/mosixmark.flv" frameborder="0" allow="autoplay" scrolling="no"></iframe> -->
           <iframe class="w-full h-auto shadow-lg  min-h-[25rem]" v-else-if="showLive" :src="playbackinfo.liveUrl" style="height:100%;width:100%;border:none;" scrolling="no"></iframe>
         <!-- <iframe v-else style="height:100%;width:100%;border:none;" scrolling="no" src="https://135ka.com/index.php/index/lhc_video.html?t=xal"></iframe> -->
         <div v-else style="width:100%;height:565px;background-color:black;position:relative;" id="live_div">
 			<div style="position:absolute;top:40%;width:100%;height:45px;line-height:45px;color:white;text-align:center;font-size:18px;" id="live_tip">
-				<span class="unicode_key"> {{codeToLottery(winresultsinfo.lotteryType)}}</span><input type="hidden" :value="codeToLottery(winresultsinfo.lotteryType)"><span class="unicode_key">搅珠</span><input type="hidden" value="搅珠">直播时间为<span class="unicode_key">开奖</span><input type="hidden" value="开奖">日 <span style="color:red;">21:32-21:38</span> (<span class="unicode_key">北京</span><input type="hidden" value="北京">时间)
+				<span class="unicode_key"> {{codeToLottery(winresultsinfo.lotteryType)}}</span><input type="hidden" :value="codeToLottery(winresultsinfo.lotteryType)"><span class="unicode_key">搅珠</span><input type="hidden" value="搅珠">直播时间为<span class="unicode_key">开奖</span><input type="hidden" value="开奖">日 <span style="color:red;">{{indMenu?.openTime}}</span> (<span class="unicode_key">北京</span><input type="hidden" value="北京">时间)
 			</div>
 		</div>
       
@@ -309,18 +303,13 @@
 </template>
 
 <script setup>
-import { getNewDataApi, getNewDataApiG,datalistApi } from "@/api/index";
+import { getNewDataApi, datalistApi } from "@/api/index";
 import {
   codeToLottery,
   formatTimestamp,
   formatTimestamp1,
   oddEven,
-  sxliang,
-  weishuliang,
-  getZodiacsObj,
-  ColorDict
 } from "@/utils/utils";
-
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import  settingMer  from "@/utils/settingMer";
@@ -329,19 +318,18 @@ const categoryId = ref(route.params.id);
 const year = ref(new Date(new Date().getFullYear(), 0));
 const nowyear = ref(new Date(new Date().getFullYear(), 0));
 const nextwinresultst = ref({});
-const winresultsinfo = ref({});
+const winresultsinfo = ref({ball:[]});
 const loading = ref(false);
 const tableLoading = ref(false);
 console.log("sdddd",settingMer)
 const liveUrl = computed(()=>
 // http://202.146.223.40:8123
-`${indMenu.value?.liveUrl2}&url=${indMenu.value?.liveUrl}`
+`http://202.146.223.40:8123/index.html?t=${new Date().getTime()}&url=${indMenu.value?.liveUrl}`
 )
 const segmentedProps = {
   label: "name",
   value: "code",
 };
-
 const timer = ref(null);
 const countdownTime = ref([]);
 const pageNum = ref(1);
@@ -351,107 +339,57 @@ const resultslist = ref([]);
 const tableRef = ref();
 const dialogVisible = ref(false);
 const playbackinfo = ref({});
-const lastBall = ref('');
 let isRef = ref(false)
 const indMenu = computed(() => {
   return settingMer.menuList.find((e) => e.code === categoryId.value) || {};
 });
 const hasNewIndex = ref(-1); // 记录最新号码的索引
-const getColors = (n) => {
-  let str = 'red'
-  console.log("sfff=11", n,ColorDict)
-  for(let i in ColorDict){
-    let ars = ColorDict[i].map(e=>+e)
-    // console.log("sfsff=",i,ars,String(n),(ars).includes(+n))
-    if((ars).includes(+n)){
-      str = i
-
-    }
-   
-  }
-  return str
-};
-const resFn = (x) => {
-  let numberarr = x.numbers.split(",");
-        let sbarr = x.sb.split(",");
-        let sxarr = x.sx.split(",");
-        let ball = [];
-        hasNewIndex.value = numberarr.length-1;
-
-        numberarr.forEach((j, i) => {
-          ball.push({
-            num: j,
-            sb: sbarr[i],
-            sx: sxarr[i],
-          });
-        });
-        console.log("sdddd==", hasNewIndex.value,  winresultsinfo.value.ball)
-            x.ball = ball;
-           winresultsinfo.value = x;
-        //  sb
-        //   sx
-        if(isOpen()&&!ball[0].num&&!winresultsinfo.value.lastBall){
-           // 触发动画
-        }else if(ball?.length==7){
-          // lastBall.value = ball[ball.length - 1];
-          
-          winresultsinfo.value.lastBall = ball[ball.length - 1];
-        }
-};
 const getNewData = async () => {
-   let lotCode = categoryId.value.toLowerCase()
+  // indMenu.value.data?indMenu.value.data
   loading.value = true;
-    
   const res = await getNewDataApi({
     year: year.value.getFullYear(),
     lotteryType: categoryId.value,
   });
   loading.value = false;
-   let list = res.data;
   if (res.code === 200) {
-  
-   
-    list.forEach(async (x, s) => {
+    let list = res.data;
+    list.forEach((x) => {
       if (x.status == 0) {
         nextwinresultst.value = x;
         countdownTimeStr(nextwinresultst.value.date);
-      } else {
-         if(s==1&&lotCode.indexOf('mo')>-1){
- 
-          const res1 = await getNewDataApiG({
-          issue: x.year+x.period,
-          lotteryType: categoryId.value,
-        }).catch(e=>{
-            resFn(x)
+      } else if (x.status == 1) {
+        let numberarr = x.numbers.split(",");
+        let sbarr = x.sb.split(",");
+        let sxarr = x.sx.split(",");
+        let ball = [];
+        console.log("sdddd",numberarr,sbarr,sxarr)
+        hasNewIndex.value = numberarr.length-2;
+        
+        numberarr.forEach((j, i) => {
+         // 记录最新号码的索引
+          ball.push({
+            num: j,
+            sb: sbarr[i],
+            sx: sxarr[i],
+            animated: false, // 初始化动画标记为 false
+          });
         });
-         console.log("sdddddd==", x,res1)
-         if(res1){
+        x.lastBall = ball.pop();
+        x.ball = ball;
+        winresultsinfo.value = x;
 
-         
-         if(lotCode =='xmo'){
-          let datas =  res1.data.Obj?.newresult
-            x.numbers =  datas.numbers.join(",") 
-
-            x.sx =  datas.sx.join(",")
-            x.sb =  datas.sb.join(",")
-         }else{
-          x.numbers =  res1.data.data.openCode
-          let ZodiacsObj = getZodiacsObj(x.date*1000)
-       
-          x.sx =  x.numbers.split(",").map(e=>ZodiacsObj[+e]).join(",")
-          x.sb =  x.numbers.split(",").map(e=>getColors(e)).join(",")
-         }
-         x.status =  x.numbers.split(",").length==7?2:1
-         }
-   
-        
+        // 触发动画
+        if (showLive.value && hasNewIndex.value !== -1) {
+          nextTick(() => {
+            // winresultsinfo.value.ball.forEach((_, index) => {
+                   console.log("sdddd", hasNewIndex.value,  winresultsinfo.value.ball)
+              // setTimeout(() => {
+              // winresultsinfo.value.ball[hasNewIndex.value].animated = true; // 按顺序触发动画
+              // },  hasNewIndex.value*500); // 每个球延迟 500ms
+            // });
+          });
         }
-        resFn(x)
-        
-    
-
-       
-          
       }
     });
   } else {
@@ -472,9 +410,6 @@ const logo = computed(()=>{
   console.log("sd",url,winresultsinfo.value)
   return url 
 })
-const opening = computed(()=>{
-  return +winresultsinfo.value.status ==1&&winresultsinfo.value.ball&&winresultsinfo.value.ball.length<6
-})
 const isOpen = (K='_openTime')=>{
   let open = false
   if(indMenu.value[K]){
@@ -486,34 +421,33 @@ const isOpen = (K='_openTime')=>{
       let startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), start[0], start[1]);
       let endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), end[0], end[1]);
       open = now >= startTime && now <= endTime;
-      // console.log("isOpen",open,indMenu.value[K],startTime,endTime)
     }
-     
   }
- 
-  return open 
+  return open
 }
 const showLive = computed(()=>{
   let isShow  = false
-  let lic = Date.now() - new Date(nextwinresultst.value.date);
+  // nextwinresultst.value.status = 1
+  let t = new Date(nextwinresultst.value.date*1000).getTime() ;
+  let lic = Date.now() - t;
+  console.log("sd==",lic,new Date(t),winresultsinfo.value.status==1,nextwinresultst.value)
+  let show = isOpen('openTime');  
+  console.log("sd",nextwinresultst.value.date,show)
 
-  let show = +winresultsinfo.value.status==1|| isOpen('liveTime');  
-    console.log("sd==",show)
-  if(show){
-     isShow = true
+  isShow = show
     // setTimeout(()=>{
     //   isShow = false
     // },4000)
-  }
- return isShow
+  
+ return true
 })
 const getdatalist = async   () => {
 
-  tableLoading.value = true;
+  tableLoading.value = isRef.value;
   const res = await datalistApi({
     year: year.value.getFullYear(),
     lotteryType: categoryId.value,
-    status: 2,
+    status: 1,
     pageNum: pageNum.value,
     pageSize: pageSize.value,
   });
@@ -593,16 +527,6 @@ const playback = (item) => {
 // 倒计时
 const countdownTimeStr = (timestamp) => {
   clearInterval(timer.value);
-  if (countdownTime.value.length > 0) {
-    if (
-      countdownTime.value[0] == "00" &&
-      countdownTime.value[1] == "00" &&
-      countdownTime.value[2] == "00"
-    ) {
-      clearInterval(timer.value);
-      segmentedChange(1);
-    }
-  }
   timer.value = setInterval(() => {
     let now = Date.now();
     let diff = Math.max(0, timestamp * 1000 - now);
@@ -611,6 +535,14 @@ const countdownTimeStr = (timestamp) => {
     const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
     const s = String(total % 60).padStart(2, "0");
     countdownTime.value = [h, m, s];
+
+    // 倒计时结束后刷新数据
+    if (total <= 0) {
+      clearInterval(timer.value);
+      segmentedChange(1); // 刷新数据
+    }
+    // console.log("sd=====",isOpen())
+    
   }, 1000);
 };
 
@@ -623,8 +555,8 @@ onMounted(() => {
        setInterval(()=>{
         segmentedChange(1); // 刷新数据
         
-      },isOpen()?5000:60000)
-    }, 5000);
+      },isOpen()?2000:60000)
+    }, 1000);
   //   nextTick(() => {
   //   });
 });
@@ -637,7 +569,6 @@ onUnmounted(() => clearInterval(timer.value));
     padding: 10px;
     border-left: 1px solid #f0f0f0;
 }
-
 
 .animated-ball {
   animation: fadeInScale 0.5s ease-out forwards;

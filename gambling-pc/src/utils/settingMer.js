@@ -8,11 +8,13 @@ const menuList = [
     code: "index",
     url: "/home",
   },
+
   {
     name: "澳门六合彩",
     code: "MO",
     _code: "lal",
     liveUrl: "https://play8398.lianwin88.com/live/mosixmark.flv",
+    liveUrl2: `https://00853lhc.com/player/index.html?t=${new Date().getTime()}`,
     url: "/mark/MO",
     data:{
       lotCode: "lal",
@@ -28,7 +30,10 @@ const menuList = [
       lotCode: "xal",
       ltype: 3
     },
-    liveUrl: "https://play3833366.is-spec.com/live/mosixmark.flv",
+    //g.opt.liveUrls = ["https://vdm6-ali.xjoyomn.com/live/2032-2.flv", "https://vdm6-hw.180ymzl.com/live/2032-2.flv", "https://vdm6-ali.cokim5.com/live/2032-2.flv"]
+    liveUrl: "https://vdm6-hw.qunleniuniu.com/live/2032-2.flv",
+    // key=8816507d2da03972e75a5e57182dffa0.6781852baca925f3563bc24fe0bbf813.1779457508
+    liveUrl2: `https://d2.freelegalway.com/FL/CC/VALIDATOR?t=${new Date().getTime()}&key=8816507d2da03972e75a5e57182dffa0.6781852baca925f3563bc24fe0bbf813.1779457508`,
     url: "/mark/XMO",
     // 21:33-21:38 
     openTime: "21:33-21:38",
