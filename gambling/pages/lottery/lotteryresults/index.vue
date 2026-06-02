@@ -504,7 +504,7 @@
 				datalistApi({
 					year: that.newyear,
 					lotteryType: that.code,
-					status: 1,
+					status: 2,
 					pageNum: that.pageNum,
 					pageSize: that.pageSize,
 				}).then(res => {

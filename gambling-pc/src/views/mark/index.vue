@@ -26,10 +26,11 @@
               :key="index"
               :class="{ 'animated-ball':  winresultsinfo.ball[index]?.animated }" 
             ><!-- 动态绑定动画类 -->
+
               <div
                 class="text-white text-[1.2rem] w-[2.1rem] h-[2.1rem] flex items-center justify-center rounded-full"
                 :class="`${
-               isOpen()&&!winresultsinfo.ball[index]?.num ?'bg-gray-400':
+               (isOpen('_openTime')&&(winresultsinfo.ball.length<7&&!winresultsinfo.ball[index].num))||(winresultsinfo.status==2&& isOpen('_openTime'))?'bg-gray-400':
                winresultsinfo.ball[index]?.sb == 'red'
                     ? 'bg-rose-600'
                     : winresultsinfo.ball[index]?.sb == 'blue'
@@ -39,9 +40,9 @@
                 }`"
               >
      
-                {{   winresultsinfo.ball[index]?.num || item }}
+                {{   isOpen('_openTime','')&&[2,1].includes(+winresultsinfo.status)?item:winresultsinfo.ball[index]?.num || item }}
               </div>
-              <div  class="text-[gray] text-[1rem] mt-[0.5rem]">{{  winresultsinfo.ball[index]?.sx||'-' }}</div>
+              <div  class="text-[gray] text-[1rem] mt-[0.5rem]">{{getZodiacsObj(winresultsinfo.date*1000)[+winresultsinfo.ball[index]?.num] ||'-' }}</div>
             </li>
           </transition-group>
      
@@ -53,7 +54,7 @@
             <div
               class="text-white text-[1.2rem] w-[2.1rem] h-[2.1rem] flex items-center justify-center rounded-full"
               :class="`${
-                isOpen()||!winresultsinfo.lastBall?'bg-gray-400': 
+               (isOpen('_openTime')&&[2,1].includes(+winresultsinfo.status))||(winresultsinfo.status==1&& isOpen('_openTime',winresultsinfo.lastBall?.num))?'bg-gray-400': 
                 winresultsinfo.lastBall?.sb == 'red'
                   ? 'bg-rose-600'
                   : winresultsinfo.lastBall?.sb == 'blue'
@@ -62,17 +63,23 @@
               }`"
             >
           
-             {{ [0,2].includes(+winresultsinfo.status)?winresultsinfo.lastBall?.num||'中' : '中' }}
+             {{  (isOpen('_openTime')&&[2,1].includes(+winresultsinfo.status))||(winresultsinfo.status==1&& isOpen('_openTime',winresultsinfo.lastBall?.num))?'中':winresultsinfo.lastBall?.num||'中'  }}
             </div>
             <div class="text-[gray] text-[1rem] mt-[0.5rem]">
-              {{ winresultsinfo.lastBall?.sx||'-' }}
+              {{getZodiacsObj(winresultsinfo.date*1000)[+winresultsinfo.lastBall?.num] ||'-' }}
             </div>
           </li>
         </ul>
       </div>
       <div class="w-[1px] h-[5rem] bg-slate-200"></div>
       <div class="w-[50%] px-[1.5rem] h-full flex justify-between items-center ">
-        <div v-if="!isOpen()" >
+      
+        <div v-if="isOpen('_openTime', winresultsinfo.lastBall?.num1)" 
+              class="w-[8.5rem] h-[2.5rem] bg-[#20b0cd] flex justify-center items-center text-white mx-[5px] margR20"
+            >
+              {{'开奖中...' }}
+            </div>
+            <div v-else >
           <div class="text-[0.8rem]/[1.6rem] text-[#666]">
             距<span class="text-[red] px-[5px]"
               >{{ nextwinresultst.year }}{{ nextwinresultst.period }}</span
@@ -101,11 +108,6 @@
             秒
           </div>
         </div>
-        <div v-else-if="isOpen()"
-              class="w-[8.5rem] h-[2.5rem] bg-[#20b0cd] flex justify-center items-center text-white mx-[5px] margR20"
-            >
-              {{'开奖中...' }}
-            </div>
         <div class="line margt20" id="startVideo" style="position:relative;cursor:pointer;"  @click.prevent="playback({...nextwinresultst,liveUrl,})">
 
 				<img :src="logo" width="185" height="122">
@@ -115,11 +117,12 @@
     </div>
 
     <!-- 开奖记录 -->
-    <div class="bg-white max-w-[1200px] mx-auto mb-[2rem]">
+    <div class="bg-white max-w-[1250px] mx-auto mb-[2rem]">
       <div class="flex justify-between items-center px-[1rem] py-[0.8rem]">
         <span class="font-bold text-[1.1rem]">开奖记录</span>
         <div class="flex items-center text-[1rem] text-[#555]">
           <span class="">日期：</span>
+
           <el-date-picker
             v-model="year"
             type="year"
@@ -137,34 +140,36 @@
           style="width: 100%"
           v-loading="tableLoading"
           stripe
+      
+         
           border
           class="text-[1rem]"
           ref="tableRef"
         >
-          <el-table-column label="时间" align="center" width="200">
+          <el-table-column label="时间" align="center" width="160">
             <template #default="scope">
               <div class="text-center">
                 {{ formatTimestamp(scope.row.date) }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="期数" align="center" width="100">
+          <el-table-column label="期数" align="center" width="90">
             <template #default="scope">
               <div class="text-center">
                 {{ scope.row.year + scope.row.period }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="号码" align="center" min-width="350">
+          <el-table-column label="号码" align="center" width="240">
             <template #default="scope">
               <ul class="flex text-[1rem] justify-center">
                 <li
-                  class="flex flex-col items-center mr-[5px]"
+                  class="flex flex-col items-center mr-[3px]"
                   v-for="(item, index) in scope.row.ball"
                   :key="index"
                 >
                   <div
-                    class="text-white w-[2rem] h-[2rem] flex items-center justify-center rounded-full"
+                    class="text-white w-[1.5rem] h-[1.5rem] flex items-center justify-center rounded-full"
                     :class="`${
                       item.sb == 'red'
                         ? 'bg-rose-600'
@@ -175,14 +180,14 @@
                   >
                     {{ item.num }}
                   </div>
-                  <div class="text-[gray] mt-[5px]">
-                    {{ item.sx }}
+                  <div class="text-[gray] mt-[2px]">
+                    {{ getZodiacsObj(scope.row.date*1000)[+item.num] || '-'  }}
                   </div>
                 </li>
                 <li class="text-[1.5em]">+</li>
-                <li class="flex flex-col items-center ml-[0.8rem]">
+                <li class="flex flex-col items-center ml-[0.3rem]">
                   <div
-                    class="text-white w-[2rem] h-[2rem] flex items-center justify-center rounded-full"
+                    class="text-white w-[1.5rem] h-[1.5rem] flex items-center justify-center rounded-full"
                     :class="`${
                       scope.row.lastBall?.sb == 'red'
                         ? 'bg-rose-600'
@@ -193,15 +198,16 @@
                   >
                     {{ scope.row.lastBall?.num }}
                   </div>
-                  <div class="text-[gray] mt-[5px]">
-                    {{ scope.row.lastBall?.sx }}
+                  <div class="text-[gray] mt-[2px]">
+                
+                    {{ getZodiacsObj(scope.row.date*1000)[+scope.row.lastBall?.num] || '-' }}
                   </div>
                 </li>
               </ul>
             </template>
           </el-table-column>
           
-            <el-table-column label="生肖量" align="center" width="80">
+            <el-table-column label="生肖量" align="center" width="70">
               <template #default="scope">
                 <div class="text-center">
             
@@ -209,30 +215,75 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column label="尾数量" align="center" width="80">
+            <el-table-column label="尾数量" align="center" width="70">
               <template #default="scope">
                 <div class="text-center">
                   {{ weishuliang([...scope.row.ball.map(e=>e.num), scope.row.lastBall?.num]) }}
                 </div>
               </template>
             </el-table-column>
+        <el-table-column label="特码" align="center" >
+     
       
+              <!-- {{ getSpecial(scope.row.lastBall?.num) }} -->
+         
+           
+             <el-table-column label="单双" align="center" width="70">
+              <template #default="scope">
+                <div class="text-center">
+                  {{ scope.row.lastBall?.num==49 ?'和' :oddEven(scope.row.lastBall?.num) }}
+                </div>
+              </template>
+            </el-table-column>
+          
+            <el-table-column label="大小" align="center" width="70">
+              <template #default="scope">
+                <div class="text-center">
+                  {{ scope.row.lastBall?.num==49 ?'和' :isBig(scope.row.lastBall?.num) }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="合单双" align="center" width="70">
+              <template #default="scope">
+                <div class="text-center">
+              
+                  {{ scope.row.lastBall?.num==49 ?'和' :'合'+oddEven(weishuSum(scope.row.lastBall?.num)) }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="合大小" align="center" width="70">
+              <template #default="scope">
+                <div class="text-center"> 
+                  {{ scope.row.lastBall?.num==49 ?'和' :'合'+isBig(weishuSum(scope.row.lastBall?.num),7) }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="尾大小" align="center" width="70">
+              <template #default="scope">
+                <div class="text-center">
+                  {{'尾'+scope.row.lastBall?.num==49 ?'和' : weiSize(scope.row.lastBall?.num) }}
+                </div>
+              </template>
+            </el-table-column> 
+           
+          </el-table-column>
+
           <el-table-column label="总和" align="center">
-            <el-table-column label="数量" align="center" width="80">
+            <el-table-column label="总分" align="center" width="70">
               <template #default="scope">
                 <div class="text-center">
                   {{ scope.row.total }}
                 </div>
               </template>
             </el-table-column>
-            <el-table-column label="大小" align="center" width="80">
+            <el-table-column label="大小" align="center" width="65">
               <template #default="scope">
                 <div class="text-center">
                   {{ scope.row.total >= 175 ? "大" : "小" }}
                 </div>
               </template>
             </el-table-column>
-            <el-table-column label="单双" align="center" width="80">
+            <el-table-column label="单双" align="center" width="55">
               <template #default="scope">
                 <div class="text-center">
                   {{ oddEven(scope.row.total) }}
@@ -241,10 +292,10 @@
             </el-table-column>
           </el-table-column>
           <el-table-column
-            fixed="right"
+        
             label="视频"
             align="center"
-            width="100"
+            width="65"
           >
             <template #default="scope">
               <el-button
@@ -255,6 +306,7 @@
                 "
                 type="primary"
                 size="small"
+                style="width: 45px;padding: 5px 2px;"
                 @click.prevent="playback(scope.row)"
               >
                 回放
@@ -278,14 +330,14 @@
     <el-dialog
       v-model="dialogVisible"
       :title="playbackinfo.dialogVisibleTitle"
-      max-width="50rem"
+      max-width="896px"
     >
 
-      <div class="w-full h-auto shadow-lg min-h-[25rem]">
+      <div class="w-full h-auto shadow-lg min-h-[565px]">
         <!-- controlsList="nodownload nofullscreen noremoteplayback disablePictureInPicture" 隐藏全屏... -->
         <video
           :src="playbackinfo.videoUrl"
-          class="w-full h-auto shadow-lg min-h-[25rem]"
+          class="w-full h-auto shadow-lg min-h-[565px]"
           controls
           autoplay
           preload="metadata"
@@ -295,11 +347,11 @@
           您的浏览器不支持视频播放。
         </video>
         <!-- <iframe data-v-98da589e="" width="746.6666666666666" height="420" src="/player/index.html?url=https://play8398.lianwin88.com/live/mosixmark.flv" frameborder="0" allow="autoplay" scrolling="no"></iframe> -->
-          <iframe class="w-full h-auto shadow-lg  min-h-[25rem]" v-else-if="showLive" :src="playbackinfo.liveUrl" style="height:100%;width:100%;border:none;" scrolling="no"></iframe>
+          <iframe class="w-full h-auto shadow-lg  min-h-[565px]" v-else-if="showLive" :src="playbackinfo.liveUrl" style="height:100%;width:100%;border:none;" scrolling="no"></iframe>
         <!-- <iframe v-else style="height:100%;width:100%;border:none;" scrolling="no" src="https://135ka.com/index.php/index/lhc_video.html?t=xal"></iframe> -->
         <div v-else style="width:100%;height:565px;background-color:black;position:relative;" id="live_div">
 			<div style="position:absolute;top:40%;width:100%;height:45px;line-height:45px;color:white;text-align:center;font-size:18px;" id="live_tip">
-				<span class="unicode_key"> {{codeToLottery(winresultsinfo.lotteryType)}}</span><input type="hidden" :value="codeToLottery(winresultsinfo.lotteryType)"><span class="unicode_key">搅珠</span><input type="hidden" value="搅珠">直播时间为<span class="unicode_key">开奖</span><input type="hidden" value="开奖">日 <span style="color:red;">21:32-21:38</span> (<span class="unicode_key">北京</span><input type="hidden" value="北京">时间)
+				<span class="unicode_key"> {{codeToLottery(winresultsinfo.lotteryType)}}</span><input type="hidden" :value="codeToLottery(winresultsinfo.lotteryType)"><span class="unicode_key">搅珠</span><input type="hidden" value="搅珠">直播时间为<span class="unicode_key">开奖</span><input type="hidden" value="开奖">日 <span style="color:red;">{{indMenu.openTime}}</span> (<span class="unicode_key">北京</span><input type="hidden" value="北京">时间)
 			</div>
 		</div>
       
@@ -315,15 +367,19 @@ import {
   formatTimestamp,
   formatTimestamp1,
   oddEven,
+  isBig,
+  weishuSum,
   sxliang,
   weishuliang,
   getZodiacsObj,
-  ColorDict
+  ColorDict,
+  getSpecial
 } from "@/utils/utils";
 
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import  settingMer  from "@/utils/settingMer";
+import { weiSize } from "../../utils/utils";
 const route = useRoute();
 const categoryId = ref(route.params.id);
 const year = ref(new Date(new Date().getFullYear(), 0));
@@ -335,7 +391,8 @@ const tableLoading = ref(false);
 console.log("sdddd",settingMer)
 const liveUrl = computed(()=>
 // http://202.146.223.40:8123
-`${indMenu.value?.liveUrl2}&url=${indMenu.value?.liveUrl}`
+// ${indMenu.value?.liveUrl2}
+`${indMenu.value?.liveUrl2}?url=${indMenu.value?.liveUrl}`
 )
 const segmentedProps = {
   label: "name",
@@ -353,6 +410,7 @@ const dialogVisible = ref(false);
 const playbackinfo = ref({});
 const lastBall = ref('');
 let isRef = ref(false)
+let isRefList = ref(false)
 const indMenu = computed(() => {
   return settingMer.menuList.find((e) => e.code === categoryId.value) || {};
 });
@@ -398,10 +456,10 @@ const resFn = (x) => {
           winresultsinfo.value.lastBall = ball[ball.length - 1];
         }
 };
-const getNewData = async () => {
+const getNewData = async (s) => {
    let lotCode = categoryId.value.toLowerCase()
   loading.value = true;
-    
+  isRef.value = s
   const res = await getNewDataApi({
     year: year.value.getFullYear(),
     lotteryType: categoryId.value,
@@ -416,42 +474,8 @@ const getNewData = async () => {
         nextwinresultst.value = x;
         countdownTimeStr(nextwinresultst.value.date);
       } else {
-         if(s==1&&lotCode.indexOf('mo')>-1){
- 
-          const res1 = await getNewDataApiG({
-          issue: x.year+x.period,
-          lotteryType: categoryId.value,
-        }).catch(e=>{
-            resFn(x)
-        });
-         console.log("sdddddd==", x,res1)
-         if(res1){
-
-         
-         if(lotCode =='xmo'){
-          let datas =  res1.data.Obj?.newresult
-            x.numbers =  datas.numbers.join(",") 
-
-            x.sx =  datas.sx.join(",")
-            x.sb =  datas.sb.join(",")
-         }else{
-          x.numbers =  res1.data.data.openCode
-          let ZodiacsObj = getZodiacsObj(x.date*1000)
        
-          x.sx =  x.numbers.split(",").map(e=>ZodiacsObj[+e]).join(",")
-          x.sb =  x.numbers.split(",").map(e=>getColors(e)).join(",")
-         }
-         x.status =  x.numbers.split(",").length==7?2:1
-         }
-   
-        
-        }
-        resFn(x)
-        
-    
-
-       
-          
+        resFn(x)   
       }
     });
   } else {
@@ -473,9 +497,9 @@ const logo = computed(()=>{
   return url 
 })
 const opening = computed(()=>{
-  return +winresultsinfo.value.status ==1&&winresultsinfo.value.ball&&winresultsinfo.value.ball.length<6
+  return +winresultsinfo.value.status ==1&&winresultsinfo.value.ball&&winresultsinfo.value.ball.length<7
 })
-const isOpen = (K='_openTime')=>{
+const isOpen = (K='_openTime',num)=>{
   let open = false
   if(indMenu.value[K]){
     let timeArr = indMenu.value[K].split("-");
@@ -486,26 +510,24 @@ const isOpen = (K='_openTime')=>{
       let startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), start[0], start[1]);
       let endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), end[0], end[1]);
       open = now >= startTime && now <= endTime;
-      // console.log("isOpen",open,indMenu.value[K],startTime,endTime)
+      if(open&&opening.value){
+
+      }
     }
      
   }
  
-  return open 
+  return open && (!num || num=='')
 }
 const showLive = computed(()=>{
   let isShow  = false
   let lic = Date.now() - new Date(nextwinresultst.value.date);
 
-  let show = +winresultsinfo.value.status==1|| isOpen('liveTime');  
-    console.log("sd==",show)
+  let show = +winresultsinfo.value.status==1|| isOpen('_openTime');  
   if(show){
      isShow = true
-    // setTimeout(()=>{
-    //   isShow = false
-    // },4000)
   }
- return isShow
+ return show
 })
 const getdatalist = async   () => {
 
@@ -549,15 +571,19 @@ const getdatalist = async   () => {
       resultslist.value = list;
     }
   }
-  tableRef.value.scrollTo({ top: 0 });
+  nextTick(()=>{
+    tableRef.value.scrollTo&&tableRef.value.scrollTo({ top: 0 });
+  })
+  
 };
 
-const segmentedChange = (Ref) => {
+const segmentedChange = (rev) => {
+  
   getNewData();
   pageNum.value = 1;
 
-  isRef.value = !!Ref
-  if(!Ref){
+  isRefList.value = !!rev
+  if(!rev){
      getdatalist();
    
   }
@@ -593,16 +619,7 @@ const playback = (item) => {
 // 倒计时
 const countdownTimeStr = (timestamp) => {
   clearInterval(timer.value);
-  if (countdownTime.value.length > 0) {
-    if (
-      countdownTime.value[0] == "00" &&
-      countdownTime.value[1] == "00" &&
-      countdownTime.value[2] == "00"
-    ) {
-      clearInterval(timer.value);
-      segmentedChange(1);
-    }
-  }
+  
   timer.value = setInterval(() => {
     let now = Date.now();
     let diff = Math.max(0, timestamp * 1000 - now);
@@ -611,6 +628,21 @@ const countdownTimeStr = (timestamp) => {
     const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
     const s = String(total % 60).padStart(2, "0");
     countdownTime.value = [h, m, s];
+    if (countdownTime.value.length > 0&&diff<=800) {
+    if (
+      countdownTime.value[0] == "00" &&
+      countdownTime.value[1] == "00" &&
+      countdownTime.value[2] == "00"
+    ) {
+      clearInterval(timer.value);
+      if(!isRef.value){
+        getNewData(1);
+      }
+       if(!isOpen()){
+        isRef.value = false
+       }
+    }
+  }
   }, 1000);
 };
 
@@ -621,7 +653,17 @@ onMounted(() => {
    segmentedChange();
     setTimeout(() => {
        setInterval(()=>{
-        segmentedChange(1); // 刷新数据
+          let op = isOpen()
+        if(op){
+
+      console.log("sd=op",op)
+       getNewData();
+        pageNum.value = 1;
+        }else if(+resultslist.value[0]?.period!==winresultsinfo.value.period&&+winresultsinfo.value.status==2){
+          console.log("sd=close",op)
+           getdatalist();
+        }
+      
         
       },isOpen()?5000:60000)
     }, 5000);
@@ -638,7 +680,25 @@ onUnmounted(() => clearInterval(timer.value));
     border-left: 1px solid #f0f0f0;
 }
 
-
+::v-deep td,::v-deep th{
+  padding:  0 !important;
+.cell{
+  font-size: 15px !important;
+  padding:3px  0 !important;
+  *{
+    font-size: 15px !important;
+  }
+   button {
+    line-height: 25px !important;
+    height:25px !important;
+    *{
+    font-size: 13px !important;
+    line-height: 25px !important;
+    height:25px !important;
+  }
+   }
+}
+} 
 .animated-ball {
   animation: fadeInScale 0.5s ease-out forwards;
 }

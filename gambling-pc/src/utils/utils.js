@@ -112,7 +112,15 @@ export const formatTimestamp2 = (val) => {
 	// 拼接成目标格式
 	return `${year}-${month}-${day} ${weekDay}`;
 };
+export function weiSize(t) {
+  return Number((t + "").slice(-1)) >= 5 ? "大" : "小"
+}
+export function weishuSum(t) {
+  return +(t + "").slice(-1) + +(t + "").slice(-2, -1)
 
+}
+export function sum(arr=[]) { return arr.reduce((a, b) => +a + (+b), 0) }
+export function isBig(n, thresh = 25) { return n >= thresh ? '大' : '小' }
 //判断单双
 export const oddEven = (val) => {
 	const n = Number(val);
@@ -123,6 +131,7 @@ export function weishuliang(n) {
   //console.log("weishuliang",nw)
   return (new Set(nw)).size
 }
+
 export function sxliang(n, Zodica) {
   //console.log("Zodica",Zodica,n)
   let nw = n.map(x => Zodica[+x])
@@ -132,6 +141,12 @@ export function sxliang(n, Zodica) {
 
 }
 
+// 部分核心算法示例
+export function getSpecial(t) {
+
+  return t ? [49 == +t ? "和" : oddEven(t), 49 == +t ? "和" : isBig(t, 25), 49 == +t ? "和" :
+    "合" + oddEven(weishuSum(t)), 49 == +t ? "和" : "合" + isBig(weishuSum(t), 7), 49 == +t ? "和" : "尾" + weiSize(t)] : ["", "", "", "", ""]
+}
 // 十二生肖顺序
 export const ZODIAC_LIST = [
   '鼠', '牛', '虎', '兔', '龙', '蛇',

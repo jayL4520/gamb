@@ -194,7 +194,7 @@
 							if(x.status == 0){
 								that.nextwinresultstime = that.formatTimestamp(x.date)
 								that.newwininfo=x
-							}else if (x.status == 1) {
+							}else if (+x.status >=1) {
 								let numberarr = x.numbers.split(",")
 								let sbarr = x.sb.split(",")
 								let sxarr = x.sx.split(",")

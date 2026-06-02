@@ -15,6 +15,7 @@
           v-for="item in menuList"
           :key="item.url"
           :index="item.url"
+          style="height:48px !important;line-height: 48px !important;"
         >
           <div class="text-white text-[1rem]">{{ item.name }}</div>
         </el-menu-item>
@@ -69,6 +70,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+
 .custom-style {
   background: #68b0db;
   .el-menu-demo {

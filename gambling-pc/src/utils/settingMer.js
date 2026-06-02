@@ -13,7 +13,8 @@ const menuList = [
     name: "澳门六合彩",
     code: "MO",
     _code: "lal",
-    liveUrl: "https://play8398.lianwin88.com/live/mosixmark.flv",
+    
+    liveUrl: "https://vdm6-hw.qunleniuniu.com/live/2032-2.flv",
     liveUrl2: `https://00853lhc.com/player/index.html?t=${new Date().getTime()}`,
     url: "/mark/MO",
     data:{
@@ -21,7 +22,7 @@ const menuList = [
       ltype: 2
     },
     openTime: "21:32-21:38",
-    _openTime: "21:30-21:36",
+    _openTime: "21:30-21:38",
   },
   {
     name: "新澳门六合彩",
@@ -31,13 +32,15 @@ const menuList = [
       ltype: 3
     },
     //g.opt.liveUrls = ["https://vdm6-ali.xjoyomn.com/live/2032-2.flv", "https://vdm6-hw.180ymzl.com/live/2032-2.flv", "https://vdm6-ali.cokim5.com/live/2032-2.flv"]
-    liveUrl: "https://vdm6-hw.qunleniuniu.com/live/2032-2.flv",
-    // key=8816507d2da03972e75a5e57182dffa0.6781852baca925f3563bc24fe0bbf813.1779457508
-    liveUrl2: `https://d2.freelegalway.com/FL/CC/VALIDATOR?t=${new Date().getTime()}&key=8816507d2da03972e75a5e57182dffa0.6781852baca925f3563bc24fe0bbf813.1779457508`,
+    // https://play8398.lianwin88.com/live/mosixmark.flv
+    liveUrl: "https://play3636.zdwafis.com/live/mosixmark.flv",
+    // https://d2.freelegalway.com/FL/CC/VALIDATOR?t=${new Date().getTime()}&key=8816507d2da03972e75a5e57182dffa0.6781852baca925f3563bc24fe0bbf813.1779457508
+    liveUrl2: `https://00853lhc.com/player/index.html`,
     url: "/mark/XMO",
     // 21:33-21:38 
     openTime: "21:33-21:38",
-    _openTime: "21:30-21:36",
+    _openTime: "21:30-21:38",
+  
     /**{msg: "老澳门六合彩", status: true, start: "2026-05-18 21:32:00", end: "2026-05-18 21:38:00"}
 end
 : 
@@ -62,6 +65,7 @@ true */
     },
     liveUrl: "https://vdm6-hw.nbgdsygs.com/live/h6-2.flv",
     openTime: "21:32-21:40",
+    _openTime: "21:30-21:40",
     url: "/mark/HK",
   },
    {

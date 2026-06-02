@@ -85,7 +85,7 @@
     </div>
 
     <!-- 开奖记录 -->
-    <div class="bg-white max-w-[1200px] mx-auto mt-[1rem] mb-[2rem]">
+    <div class="bg-white max-w-[1250px] mx-auto mt-[1rem] mb-[2rem]">
       <div class="flex justify-between items-center px-[1rem] py-[0.8rem]">
         <span class="font-bold text-[1.1rem]">开奖记录</span>
       </div>

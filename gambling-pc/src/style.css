@@ -1,13 +1,9 @@
-@import "tailwindcss" important;
+@import "tailwindcss";
 
-:root {
-  
-}
+:root {}
 
 
 body {
   margin: 0;
- padding: 0;
+  padding: 0;
 }
-
-

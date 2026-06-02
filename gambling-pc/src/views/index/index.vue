@@ -5,7 +5,7 @@
         <Header></Header>
       </el-header>
       <el-main class="p-[0]  w-full m-[0]">
-        <div class="max-w-[1200px] mx-auto">
+        <div class="max-w-[1250px] mx-auto">
            <router-view v-slot="{ Component, route }">
               <transition
                 mode="out-in"

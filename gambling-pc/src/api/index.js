@@ -34,6 +34,8 @@ export const getNewDataApiG = (params) => {
     return res1
 
 }  
+
+
 export const getNewDataApi = (params) => {
 
 //     if(lotCode.indexOf('mo')>-1){
