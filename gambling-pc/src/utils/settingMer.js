@@ -1,5 +1,3 @@
- 
-
 // 请求接口地址 如果没有配置自动获取当前网址路径
 const VUE_APP_API_URL = "http://ok2345.net";
 const menuList = [
@@ -13,34 +11,34 @@ const menuList = [
     name: "澳门六合彩",
     code: "MO",
     _code: "lal",
-    
+
     liveUrl: "https://vdm6-hw.qunleniuniu.com/live/2032-2.flv",
-    liveUrl2: `https://00853lhc.com/player/index.html?t=${new Date().getTime()}`,
+    liveUrl2: `https://00853lhc.com/player/index.html`,
     url: "/mark/MO",
-    data:{
+    data: {
       lotCode: "lal",
-      ltype: 2
+      ltype: 2,
     },
     openTime: "21:32-21:38",
-    _openTime: "21:30-21:38",
+    _openTime: "21:30-21:37",
   },
   {
     name: "新澳门六合彩",
     code: "XMO",
-    data:{
+    data: {
       lotCode: "xal",
-      ltype: 3
+      ltype: 3,
     },
     //g.opt.liveUrls = ["https://vdm6-ali.xjoyomn.com/live/2032-2.flv", "https://vdm6-hw.180ymzl.com/live/2032-2.flv", "https://vdm6-ali.cokim5.com/live/2032-2.flv"]
-    // https://play8398.lianwin88.com/live/mosixmark.flv
-    liveUrl: "https://play3636.zdwafis.com/live/mosixmark.flv",
+    // https://play3636.zdwafis.com/live/mosixmark.flv
+    liveUrl: "https://play8398.lianwin88.com/live/mosixmark.flv",
     // https://d2.freelegalway.com/FL/CC/VALIDATOR?t=${new Date().getTime()}&key=8816507d2da03972e75a5e57182dffa0.6781852baca925f3563bc24fe0bbf813.1779457508
     liveUrl2: `https://00853lhc.com/player/index.html`,
     url: "/mark/XMO",
-    // 21:33-21:38 
+    // 21:33-21:38
     openTime: "21:33-21:38",
-    _openTime: "21:30-21:38",
-  
+    _openTime: "21:30-21:37",
+
     /**{msg: "老澳门六合彩", status: true, start: "2026-05-18 21:32:00", end: "2026-05-18 21:38:00"}
 end
 : 
@@ -59,16 +57,17 @@ true */
     name: "香港六合彩",
     code: "HK",
     _code: "gal",
-    data:{
+    data: {
       lotCode: "gal",
-      ltype: 2
+      ltype: 2,
     },
     liveUrl: "https://vdm6-hw.nbgdsygs.com/live/h6-2.flv",
+    liveUrl2: `https://00853lhc.com/player/index.html`,
     openTime: "21:32-21:40",
-    _openTime: "21:30-21:40",
+    _openTime: "21:32-21:40",
     url: "/mark/HK",
   },
-   {
+  {
     name: "快乐8",
     // data:{
     //   lotCode: "lal",
@@ -93,6 +92,20 @@ true */
     url: "/markKa/2109",
   },
   {
+    name: "七星彩",
+    code: "QXC",
+    data:{
+      lotCode: "qxc",
+      ltype: 4
+    },
+    liveUrl: "",
+    liveUrl2: "https://www.cwl.gov.cn/kjxx/qxc/",
+    url: "/mark/QXC",
+    openTime: "00:00-24:00",
+    _openTime: "00:00-24:00",
+    isSevenStar: true, // 标记这是七星彩
+  },
+  {
     name: "大乐透",
     code: "5118",
     url: "/markKa/5118",
@@ -109,7 +122,7 @@ true */
     code: "5134",
     url: "/markKa/5134",
   },
- 
+
   {
     name: "39乐合彩",
     code: "2108",
@@ -121,11 +134,11 @@ true */
   //   code: "HK",
   //   url: "/mark/HK",
   // }
-]
+];
 const SettingMer = {
   // 服务器地址
   httpUrl: VUE_APP_API_URL,
-  tokenKey:"yn-token",
+  tokenKey: "yn-token",
   menuList,
   // 接口请求地址
   apiBaseURL: VUE_APP_API_URL,

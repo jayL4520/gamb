@@ -6,6 +6,12 @@ const service = axios.create({
   timeout: 60000, // 过期时间
 });
 
+// 创建七星彩专用的axios实例，返回原始响应
+const qxcService = axios.create({
+  baseURL: '/qxcv1',
+  timeout: 60000,
+});
+
 
 /**
  * 彩票类型
@@ -103,6 +109,52 @@ export const getKajiangListApi = (params) => {
     url: `/api/tw/get_kjlist`,
     method: 'get',
     params
+  })
+}
+
+/**
+ * 获取七星彩最新开奖数据 (Flask后端)
+*/
+export const getSevenStarCurrentApi = () => {
+  return qxcService({
+    url: '/lottery/current',
+    method: 'get',
+    timeout: 10000
+  })
+}
+
+/**
+ * 获取七星彩历史开奖数据 (Flask后端)
+*/
+export const getSevenStarHistoryApi = (params) => {
+  return qxcService({
+    url: '/lottery/results',
+    method: 'get',
+    params,
+    timeout: 10000
+  })
+}
+
+/**
+ * 手动触发七星彩开奖 (Flask后端)
+*/
+export const triggerSevenStarDrawApi = () => {
+  return qxcService({
+    url: '/lottery/draw',
+    method: 'post',
+    data: {},
+    timeout: 10000
+  })
+}
+
+/**
+ * 获取后台开奖配置
+*/
+export const getScheduleConfigApi = () => {
+  return qxcService({
+    url: '/schedule',
+    method: 'get',
+    timeout: 10000
   })
 }
 

@@ -9,10 +9,169 @@ export const codeToLottery = (code) => {
 		'OU': '欧洲六合彩',
 		'FI': '芬兰六合彩',
 		'TW': '台湾大乐透',
+		'QXC': '七星彩',
 	};
 
 	// 查找映射表，若不存在则返回原始代码
 	return regionMap[code] || code;
+};
+
+// 七星彩生肖映射
+const SEVEN_STAR_ZODIAC = {
+  1: '鼠', 2: '牛', 3: '虎', 4: '兔', 5: '龙', 6: '蛇',
+  7: '马', 8: '羊', 9: '猴', 10: '鸡', 11: '狗', 12: '猪'
+};
+
+// 获取七星彩号码的生肖
+export const getSevenStarZodiac = (num) => {
+  if (!num) return '';
+  const n = parseInt(num);
+  if (isNaN(n)) return '';
+  const offset = (n - 1) % 12;
+  return getZodiacsObj().numbersAll[n];
+};
+
+// 获取七星彩颜色
+export const getSevenStarColor = (num) => {
+  const n = parseInt(num);
+  if (isNaN(n)) return 'bg-gray-500';
+  
+  // 格式化号码为两位数，前导零
+  const numStr = String(n).padStart(2, '0');
+  
+  // 使用 ColorDict 匹配颜色
+  if (ColorDict.red.includes(numStr)) {
+    return 'bg-rose-600';
+  } else if (ColorDict.blue.includes(numStr)) {
+    return 'bg-blue-500';
+  } else if (ColorDict.green.includes(numStr)) {
+    return 'bg-green-500';
+  }
+  
+  // 如果不在 ColorDict 中，返回默认灰色
+  return 'bg-gray-500';
+};
+
+// 计算七星彩生肖量
+export const getSevenStarSxLiang = (numbers) => {
+  if (!numbers || numbers.length === 0) return 0;
+  const zodiacs = numbers.map(n => getSevenStarZodiac(n));
+  return (new Set(zodiacs)).size;
+};
+
+// 计算七星彩尾数量
+export const getSevenStarWeiShuLiang = (numbers) => {
+  if (!numbers || numbers.length === 0) return 0;
+  const weishus = numbers.map(n => {
+    const s = String(n);
+    return s.slice(-1);
+  });
+  return (new Set(weishus)).size;
+};
+
+// 将Flask后端数据转换为前端格式
+export const transformSevenStarData = (backendData) => {
+  if (!backendData) return null;
+  
+  // 处理不同的响应格式 - 处理 axios 响应 { data: { success: true, data: {...} } }
+  let data = null;
+  if (backendData.data && backendData.data.success) {
+    data = backendData.data.data || backendData.data;
+  } else if (backendData.success) {
+    data = backendData.data || backendData;
+  } else if (backendData.numbers || backendData.all_20_numbers) {
+    data = backendData;
+  } else if (backendData.data) {
+    data = backendData.data;
+  } else {
+    return null;
+  }
+  
+  // 格式化日期
+  let timestamp = Math.floor(new Date().getTime() / 1000);
+  if (data.created_at) {
+    try {
+      const date = new Date(data.created_at);
+      timestamp = Math.floor(date.getTime() / 1000);
+    } catch (e) {
+      // 使用当前时间
+    }
+  }
+  
+  // 只处理七星彩的7个号码
+  let sevenStarNumbers = data.seven_star_numbers || [];
+  
+  // console.log('七星彩数据处理 - sevenStarNumbers:', sevenStarNumbers, 'data:', data);
+  
+  // 构建balls数组 - 只包含7个号码，没有特码分离
+  let numbers = sevenStarNumbers;
+  let lastBall = null;
+  let yearStr = String(new Date().getFullYear());
+  
+  // 如果有7个号码，全部作为普通号码显示（七星彩没有特码分离）
+  if (sevenStarNumbers.length > 0) {
+    numbers = sevenStarNumbers;
+  }
+  
+  // 构建balls数组 - 只显示实际开奖的号码
+  const balls = numbers.map((n) => ({
+    num: String(n).padStart(2, '0'),
+    sb: '',
+    sx: getSevenStarZodiac(n)
+  }));
+  
+  console.log('七星彩balls数组长度:', balls.length);
+  
+  // 构建完整的号码字符串（用逗号分隔）
+  const allNumbersArray = [...numbers];
+  const allNumbersStr = allNumbersArray.join(',');
+  
+  // 大小单双 - 七星彩不单独显示特码的大小单双
+  let bigSmall = data.big_small || '';
+  let singleDouble = data.single_double || '';
+  
+  // 计算总和
+  let total = 0;
+  numbers.forEach(n => total += parseInt(n));
+  
+  // 获取期号
+  let periodStr = String(data.issue_number || data.period || '');
+  
+  // 从期号中提取年份，或者直接使用当前年份
+  if (periodStr && periodStr.length >= 8) {
+    // 只有期号很长的时候才尝试提取年份
+    yearStr = periodStr.substring(0, 4);
+  }
+  
+  // 计算生肖量和尾数量
+    const sxLiang = getSevenStarSxLiang(allNumbersArray);
+    const weiShuLiang = getSevenStarWeiShuLiang(allNumbersArray);
+    
+    return {
+      issue_number: data.issue_number || periodStr,
+      year: yearStr,
+      period: periodStr,
+      date: timestamp,
+      numbers: allNumbersStr,
+      ball: balls,
+      lastBall: lastBall,
+      lastNum: lastBall?.num || '',
+      bigSmall: bigSmall,
+      singleDouble: singleDouble,
+      status: data.is_drawing ? 1 : 2, // 1:开奖中, 2:已开奖,
+      total: total,
+      lotteryType: 'QXC',
+      drawing_text: data.drawing_text || '',
+      all_20_numbers: data.all_20_numbers || [],
+      seven_star_numbers: sevenStarNumbers,
+      zodiacs: data.zodiacs || {},
+      show_zodiac: data.show_zodiac !== false,
+      draw_mode: data.draw_mode || 'normal',
+      videoUrl: data.videoUrl || '',
+      sxLiang: sxLiang,
+      weiShuLiang: weiShuLiang,
+      next_draw_time: data.next_draw_time
+    };
 };
 
 export const codeToRegion = (code) => {

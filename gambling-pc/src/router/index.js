@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 
 const routes = [
   {
@@ -25,6 +25,12 @@ const routes = [
         name: "markKa",
         meta: { title: "mark", name: "MarkKa" },
         component: () => import("../views/markKa/index.vue"),
+      },
+      {
+        path: "sevenstar",
+        name: "sevenstar",
+        meta: { title: "七星彩", name: "SevenStar" },
+        component: () => import("../views/sevenstar/index.vue"),
       },
     ],
   },

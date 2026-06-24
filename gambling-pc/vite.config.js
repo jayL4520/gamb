@@ -49,6 +49,11 @@ export default defineConfig({
        '/xmoapi': {
         target: 'https://apiam.ad771.cn',
         changeOrigin: true,
+      },
+      '/qxcv1': {
+        target: 'http://127.0.0.1:5000/api',
+        rewrite: (path) => path.replace(/^\/qxcv1/, ''),
+        changeOrigin: true,
       }
     }
   },
