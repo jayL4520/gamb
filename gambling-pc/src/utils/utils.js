@@ -87,26 +87,29 @@ export const transformSevenStarData = (backendData) => {
     return null;
   }
   
-  // 格式化日期
-  let timestamp = Math.floor(new Date().getTime() / 1000);
+  // ★★★ 格式化日期：始终使用API传过来的 created_at，默认null，不使用当前系统时间 ★★★
+  let timestamp = null;
+  let drawDate = null;
   if (data.created_at) {
     try {
-      const date = new Date(data.created_at);
-      timestamp = Math.floor(date.getTime() / 1000);
+      drawDate = new Date(data.created_at);
+      if (!isNaN(drawDate.getTime())) {
+        timestamp = Math.floor(drawDate.getTime() / 1000);
+      }
     } catch (e) {
-      // 使用当前时间
+      // 保持 null
     }
   }
-  
+
+  // ★★★ 年份从开奖时间中提取，不使用当前系统时间 ★★★
+  let yearStr = drawDate ? String(drawDate.getFullYear()) : String(new Date().getFullYear());
+
   // 只处理七星彩的7个号码
   let sevenStarNumbers = data.seven_star_numbers || [];
-  
-  // console.log('七星彩数据处理 - sevenStarNumbers:', sevenStarNumbers, 'data:', data);
   
   // 构建balls数组 - 只包含7个号码，没有特码分离
   let numbers = sevenStarNumbers;
   let lastBall = null;
-  let yearStr = String(new Date().getFullYear());
   
   // 如果有7个号码，全部作为普通号码显示（七星彩没有特码分离）
   if (sevenStarNumbers.length > 0) {
@@ -192,6 +195,10 @@ export const codeToRegion = (code) => {
 
 // 时间戳转换工具函数
 export const formatTimestamp = (timestamp) => {
+	// ★★★ 处理无效/缺失时间戳：如果是null/undefined/非数字，显示空串而非1970年
+	if (timestamp === null || timestamp === undefined || (typeof timestamp === 'number' && isNaN(timestamp))) {
+		return '';
+	}
 	// 时间戳可能是秒或毫秒，这里统一处理为毫秒
 	const msTimestamp = typeof timestamp === 'number' ? timestamp * 1000 : 0;
 
@@ -221,6 +228,10 @@ export const formatTimestamp = (timestamp) => {
 
 // 时间戳转换工具函数
 export const formatTimestamp1 = (timestamp) => {
+	// ★★★ 处理无效/缺失时间戳：如果是null/undefined/非数字，显示空串而非1970年
+	if (timestamp === null || timestamp === undefined || (typeof timestamp === 'number' && isNaN(timestamp))) {
+		return '';
+	}
 	// 时间戳可能是秒或毫秒，这里统一处理为毫秒
 	const msTimestamp = typeof timestamp === 'number' ? timestamp * 1000 : 0;
 

@@ -8,7 +8,7 @@
       class="bg-white flex rounded-[1rem] my-[1rem] items-center py-[1.5rem]"
       :class="isSevenStar ? 'h-auto' : 'h-[11rem]'"
     >
-  
+
       <div class="px-[1.5rem] w-[50%] h-full">
         <div class="flex items-end">
           <div class="text-black font-bold text-[1.2rem]/[2rem] mr-[10px]">
@@ -130,11 +130,10 @@
       </div>
       <div class="w-[1px] h-[5rem] bg-slate-200"></div>
       <div class="w-[50%] px-[1.5rem] h-full flex justify-between items-center ">
-      
         <div v-if="isSevenStar ? sevenStarIsDrawing : isOpen('_openTime')&&(+winresultsinfo.status==1||isOpenBotKai)" 
               class="w-[8.5rem] h-[2.5rem] bg-[#20b0cd] flex justify-center items-center text-white mx-[5px] margR20"
             >
-              {{isDrawStatus?'开奖中...':'准备下一期'}}
+              {{isDrawStatus?'开奖中...':!isSevenStar?'开奖中...':'准备下一期'}}
             </div>
             <div v-else >
           <div class="text-[0.8rem]/[1.6rem] text-[#666]">
@@ -215,7 +214,9 @@
           <el-table-column label="期数" align="center" width="90">
             <template #default="scope">
               <div class="text-center">
-                <span v-if="scope.row.lotteryType === 'QXC' && scope.row.status === 1" class="text-[red]">开奖中</span>
+                
+               
+                <span v-if="scope.row.lotteryType === 'QXC' && scope.row.status === 1&&isDrawStatus" class="text-[red]">开奖中</span>
                 <span v-else>{{ scope.row.period }}</span>
               </div>
             </template>
@@ -402,7 +403,7 @@
                 <div class="text-center">
                   <template v-if="scope.row.lotteryType === 'QXC'">
                     <template v-if="scope.row.seven_star_numbers && scope.row.seven_star_numbers[6]">
-                      {{ isBig(scope.row.seven_star_numbers[6], 40) }}
+                      {{ isBig(scope.row.seven_star_numbers[6], 25) }}
                     </template>
                     <template v-else>
                       {{ scope.row.lastBall?.num == 49 ? '和' : isBig(scope.row.lastBall?.num) }}
@@ -489,7 +490,7 @@
               <template #default="scope">
                 <div class="text-center">
                   <template v-if="scope.row.lotteryType === 'QXC'">
-                    {{ scope.row.total >= 280 ? '大' : '小' }}
+                    {{ scope.row.total >= 175 ? '大' : '小' }}
                   </template>
                   <template v-else>
                     {{ scope.row.total >= 175 ? '大' : '小' }}
@@ -670,7 +671,6 @@ const sevenStarIsFetching = false // 防止重复请求
 // 倒计时相关
 let sevenStarCountdownInterval = null
 // ★★★ 新增：跟踪本地添加的开奖期号，防止开奖中历史接口刷新覆盖本地数据 ★★★
-const locallyAddedPeriod = ref(null) // 开奖中/刚开奖本地添加到历史列表顶部的期号
 const drawingRefreshTimer = ref(null) // 开奖完成后刷新历史的定时器
 const isInDrawingWindow = computed(() => {
   return isOpen('_openTime');
@@ -873,7 +873,23 @@ const getNewData = async (s) => {
         
         // 更新开奖中状态
         sevenStarIsDrawing.value = data.is_drawing
-        
+
+        // ★★★ 关键修复：统一清理历史记录中过期的"开奖中"状态 ★★★
+        // 确保任何时刻列表中最多只有一条七星彩记录显示"开奖中"
+        if (resultslist.value && resultslist.value.length > 0) {
+          const currentPeriod = data.issue_number || '';
+          resultslist.value.forEach((item, idx) => {
+            if (item.lotteryType === 'QXC' && item.status === 1) {
+              // 如果正在开奖：只保留当前期号的状态为1，其他全部设为2
+              // 如果没有在开奖：全部设为2
+              if (!data.is_drawing || item.period !== currentPeriod) {
+                const updated = { ...item, status: 2, isDrawing: false };
+                resultslist.value[idx] = updated;
+              }
+            }
+          });
+        }
+
         // 有开奖结果（包括开奖过程中的部分结果）
         if (useNumbers.length > 0) {
           const newNumbers = useNumbers
@@ -999,110 +1015,35 @@ const getNewData = async (s) => {
           // 启动倒计时
           countdownTimeStr(nextDate);
           
-          // ========== 开奖中/开奖完成：同步最新结果到历史列表 ==========
-          if (useNumbers.length > 0) {
-            const sevenStarNumbersForList = useNumbers;
-            
-            // 把Flask后端数据转换为前端需要的格式
-            const transformedForList = transformSevenStarData({
-              data: {
-                numbers: data.numbers || [],
-                issue_number: data.issue_number,
-                created_at: data.created_at,
-                super_number: null,
-                big_small: null,
-                single_double: null,
-                is_drawing: data.is_drawing,
-                show_zodiac: true,
-                draw_mode: 'bingo_sevenstar',
-                all_20_numbers: data.all_20_numbers || data.numbers || [],
-                seven_star_numbers: sevenStarNumbersForList,
-                zodiacs: {}
-              }
-            });
-            
-            if (transformedForList) {
-              // 填充特码信息（如果已有7个号码）
-              if (sevenStarNumbersForList.length >= 7) {
-                const lastNumber = sevenStarNumbersForList[6];
-                transformedForList.lastBall = {
-                  num: String(lastNumber).padStart(2, '0'),
-                  sb: '',
-                  sx: getSevenStarZodiac(lastNumber)
-                };
-              }
-              transformedForList.seven_star_numbers = sevenStarNumbersForList;
-              transformedForList.id = data.id || Date.now();
-              transformedForList.videoUrl = '';
-              // 标记开奖中状态，用于列表显示
-              transformedForList.isDrawing = data.is_drawing;
-              
-              // 检查这个期号是否已经在列表中
-              const existingIndex = resultslist.value.findIndex(item => item.period === transformedForList.period);
-              if (existingIndex === -1) {
-                // 不在列表中，加入到开头
-                resultslist.value.unshift(transformedForList);
-                // 保持列表长度不超过分页大小
-                if (resultslist.value.length > pageSize.value) {
-                  resultslist.value.pop();
-                }
-                // ★★★ 记录本地添加的期号，防止 getdatalist 覆盖 ★★★
-                locallyAddedPeriod.value = transformedForList.period;
-                if (data.is_drawing) {
-                  console.log("开奖中：最新一期已加入历史列表顶部", transformedForList.period, sevenStarNumbersForList, "locallyAddedPeriod:", locallyAddedPeriod.value);
-                } else {
-                  // 开奖完成的新结果，总数+1
-                  total.value = total.value + 1;
-                  console.log("开奖完成：最新一期已加入历史列表顶部", transformedForList.period, sevenStarNumbersForList, "locallyAddedPeriod:", locallyAddedPeriod.value);
-                }
-              } else if (existingIndex === 0) {
-                // 已在列表开头，直接更新号码（关键：开奖中每次获取新号码都更新这里）
-                resultslist.value[0] = transformedForList;
-                // ★★★ 更新本地添加期号的记录 ★★★
-                locallyAddedPeriod.value = transformedForList.period;
-                console.log(data.is_drawing ? "开奖中：更新列表顶部号码" : "开奖完成：更新列表顶部号码", transformedForList.period, sevenStarNumbersForList, "locallyAddedPeriod:", locallyAddedPeriod.value);
-              } else {
-                // 已在列表中但不在开头，移到开头
-                resultslist.value.splice(existingIndex, 1);
-                resultslist.value.unshift(transformedForList);
-                locallyAddedPeriod.value = transformedForList.period;
-                console.log("把最新一期移到列表顶部", transformedForList.period, "locallyAddedPeriod:", locallyAddedPeriod.value);
-              }
-            }
-          }
-          
-          // ===== 开奖完成后延迟刷新历史接口，且调用时保留本地最新数据 =====
-          // 1. 开奖中（is_drawing = true）：绝对不调用 getdatalist()
-          // 2. 刚开奖完成（isDrawComplete = true）：延迟一段时间后调用，带标记保留本地数据
+          // ===== 开奖完成后延迟刷新历史接口（使用后端完整列表，不再本地手动维护最新一条） =====
+          // 1. 开奖中（is_drawing = true）：绝不调用 getdatalist()，历史列表保持不变
+          // 2. 刚开奖完成（isDrawComplete = true）：延迟2秒调用 getdatalist()，用后端完整数据替换整列表
           // 3. 其他时间且无号码：正常刷新
           if (data.is_drawing || sevenStarIsDrawing.value) {
-            // ★★★ 开奖中：绝对不刷新历史接口 ★★★
-            console.log("开奖中：跳过 getdatalist，仅本地更新列表顶部。locallyAddedPeriod:", locallyAddedPeriod.value);
-            // 如果之前有开奖完成刷新定时器，清除它（避免重复刷新）
+            // 开奖中：不刷新历史接口，等待开奖完成
+            console.log("开奖中：跳过 getdatalist，历史列表保持不变");
+            // 清除可能残留的开奖完成刷新定时器
             if (drawingRefreshTimer.value) {
               clearTimeout(drawingRefreshTimer.value);
               drawingRefreshTimer.value = null;
             }
           } else if (isDrawComplete) {
-            // ★★★ 开奖刚完成：延迟5秒调用 getdatalist，带标记保留本地最新数据 ★★★
-            console.log("开奖完成：延迟5秒刷新历史接口，保留本地最新开奖期号:", locallyAddedPeriod.value);
-            // 清除之前可能有的定时器
+            // 开奖刚完成：延迟2秒刷新一次完整历史列表
+            console.log("开奖完成：延迟2秒刷新历史接口");
             if (drawingRefreshTimer.value) {
               clearTimeout(drawingRefreshTimer.value);
             }
             drawingRefreshTimer.value = setTimeout(() => {
-              console.log("开奖完成延迟刷新：执行 getdatalist，locallyAddedPeriod:", locallyAddedPeriod.value);
-              // 调用 getdatalist 时带标记：如果接口没有最新期号，保留本地数据
-              getdatalist("after_drawing");
+              console.log("开奖完成延迟刷新：执行 getdatalist()");
+              getdatalist();
               drawingRefreshTimer.value = null;
-            }, 5000);
+            }, 2000);
           } else if (useNumbers.length === 0) {
             // 非开奖中且无号码：正常刷新历史
             console.log("非开奖中且无号码，刷新历史");
             getdatalist();
           } else {
-            // 已有号码（非开奖中）：不刷新历史，避免覆盖本地数据
-            console.log("非开奖中已有号码：跳过 getdatalist，locallyAddedPeriod:", locallyAddedPeriod.value);
+            console.log("非开奖中已有号码：跳过 getdatalist");
           }
         }
       }
@@ -1341,42 +1282,9 @@ const getdatalist = async (isInt) => {
         }
       });
       
-      // ★★★ 核心校验：接口无最新数据时保留本地最新开奖数据 ★★★
-      // 检查条件：
-      // 1. 开奖中（sevenStarIsDrawing = true），或
-      // 2. 开奖完成后刷新（isInt === "after_drawing"），或
-      // 3. 有本地添加的期号记录（locallyAddedPeriod.value）
-      // 只要有本地记录，并且是七星彩，就需要检查接口是否包含最新数据
-      const needPreserveLocal = isSevenStar.value && locallyAddedPeriod.value && resultslist.value.length > 0;
-      
-      if (needPreserveLocal) {
-        // 获取本地添加的最新一期数据
-        const localLatest = resultslist.value.find(item => item.period === locallyAddedPeriod.value);
-        
-        // 检查接口返回的数据中是否包含最新期号
-        const apiHasLatestPeriod = list.some(item => item.period === locallyAddedPeriod.value);
-        
-        if (!apiHasLatestPeriod && localLatest) {
-          // ★★★ 接口还没有最新期号数据：保留本地添加的最新一期 ★★★
-          console.log("getdatalist: 接口无最新开奖期号", locallyAddedPeriod.value, "保留本地最新开奖数据");
-          // 把本地最新一期加到返回列表的开头
-          list.unshift(localLatest);
-          // 确保列表长度不超过分页大小
-          if (list.length > pageSize.value) {
-            list.pop();
-          }
-          // 总数加1（因为本地添加了一条接口还没有的数据）
-          totalCount = Math.max(totalCount, totalCount + 1);
-        } else if (apiHasLatestPeriod) {
-          // ★★★ 接口已有最新期号数据：清除本地记录，正常使用接口数据 ★★★
-          console.log("getdatalist: 接口已有最新开奖期号", locallyAddedPeriod.value, "使用完整接口数据");
-          locallyAddedPeriod.value = null;
-        }
-      }
-      
       resultslist.value = list;
       total.value = totalCount;
-      console.log("getdatalist 完成：resultslist.length =", resultslist.value.length, "total =", total.value, "locallyAddedPeriod:", locallyAddedPeriod.value);
+      console.log("getdatalist 完成：resultslist.length =", resultslist.value.length, "total =", total.value);
     } catch (err) {
       console.error('获取七星彩历史数据失败', err);
       tableLoading.value = false;
@@ -1628,14 +1536,10 @@ onMounted(() => {
             getNewData();
         }else if(!isSevenStar.value && +resultslist.value[0]?.period!==winresultsinfo.value.period&&+winresultsinfo.value.status==2&&!isRefList.value){
           // 注意：只有非七星彩才通过这个条件刷新历史接口
-          // 七星彩的历史列表已通过 getNewData 本地更新，不需要调用 getdatalist
+          // 七星彩的历史列表由 getdatalist() 统一刷新
           console.log("sd=close",op)
           isRefList.value = true
            getdatalist();
-        } else if (isSevenStar.value && !sevenStarIsDrawing.value && locallyAddedPeriod.value) {
-          // ★★★ 七星彩非开奖状态但有本地记录：也不刷新历史接口
-          // 等待开奖完成的延迟刷新会处理
-          console.log("七星彩：非开奖中但有本地记录，跳过 getdatalist，locallyAddedPeriod:", locallyAddedPeriod.value);
         }
       },(isSevenStar.value && sevenStarIsDrawing.value) ? (sevenStarIntervalMs.value + 100) : (!isSevenStar.value && isOpen()) ?5000:60000)
     }, 5000);
