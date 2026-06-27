@@ -1015,10 +1015,76 @@ const getNewData = async (s) => {
           // 启动倒计时
           countdownTimeStr(nextDate);
           
-          // ===== 开奖完成后延迟刷新历史接口（使用后端完整列表，不再本地手动维护最新一条） =====
-          // 1. 开奖中（is_drawing = true）：绝不调用 getdatalist()，历史列表保持不变
-          // 2. 刚开奖完成（isDrawComplete = true）：延迟2秒调用 getdatalist()，用后端完整数据替换整列表
-          // 3. 其他时间且无号码：正常刷新
+// if (useNumbers.length > 0) {
+//             // ★★★ 关键修复：直接复用 transformed（顶部显示对象）作为历史记录数据源，保证期号/日期完全一致 ★★★
+//             // 这样 top 显示的 winresultsinfo.period 和 history 显示的 scope.row.period 一定相同
+//             const transformedForList = {
+//               ...transformed,
+//               seven_star_numbers: useNumbers,
+//               isDrawing: data.is_drawing,
+//               videoUrl: '',
+//               id: data.id || Date.now()
+//             };
+
+//             if (useNumbers.length >= 7) {
+//               const lastNumber = useNumbers[6];
+//               transformedForList.lastBall = {
+//                 num: String(lastNumber).padStart(2, '0'),
+//                 sb: '',
+//                 sx: getSevenStarZodiac(lastNumber)
+//               };
+//             }
+//             transformedForList.ball = useNumbers.map((n) => ({
+//               num: String(n).padStart(2, '0'),
+//               sb: '',
+//               sx: getSevenStarZodiac(n)
+//             }));
+
+//             // ★★★ 关键修复：添加/更新记录前，清理其他所有七星彩记录的"开奖中"状态 ★★★
+//             // 确保任何时候都只有一条记录显示"开奖中"（或都不显示）
+//             resultslist.value.forEach((item, idx) => {
+//               if (item.lotteryType === 'QXC' && item.status === 1 && item.period !== transformedForList.period) {
+//                 const updated = { ...item, status: 2, isDrawing: false };
+//                 resultslist.value[idx] = updated;
+//               }
+//             });
+
+//             // 检查这个期号是否已经在列表中
+//             const existingIndex = resultslist.value.findIndex(item => item.period === transformedForList.period);
+//             if (existingIndex === -1) {
+//               // 不在列表中，加入到开头
+//               resultslist.value.unshift(transformedForList);
+//               // 保持列表长度不超过分页大小
+//               if (resultslist.value.length > pageSize.value) {
+//                 resultslist.value.pop();
+//               }
+//               // ★★★ 记录本地添加的期号，防止 getdatalist 覆盖 ★★★
+//               locallyAddedPeriod.value = transformedForList.period;
+//               if (data.is_drawing) {
+//                 console.log("开奖中：最新一期已加入历史列表顶部", transformedForList.period, useNumbers, "locallyAddedPeriod:", locallyAddedPeriod.value);
+//               } else {
+//                 // 开奖完成的新结果，总数+1
+//                 total.value = total.value + 1;
+//                 console.log("开奖完成：最新一期已加入历史列表顶部", transformedForList.period, useNumbers, "locallyAddedPeriod:", locallyAddedPeriod.value);
+//               }
+//             } else if (existingIndex === 0) {
+//               // 已在列表开头，直接更新号码（关键：开奖中每次获取新号码都更新这里）
+//               resultslist.value[0] = transformedForList;
+//               // ★★★ 更新本地添加期号的记录 ★★★
+//               locallyAddedPeriod.value = transformedForList.period;
+//               console.log(data.is_drawing ? "开奖中：更新列表顶部号码" : "开奖完成：更新列表顶部号码", transformedForList.period, useNumbers, "locallyAddedPeriod:", locallyAddedPeriod.value);
+//             } else {
+//               // 已在列表中但不在开头，移到开头
+//               resultslist.value.splice(existingIndex, 1);
+//               resultslist.value.unshift(transformedForList);
+//               locallyAddedPeriod.value = transformedForList.period;
+//               console.log("把最新一期移到列表顶部", transformedForList.period, "locallyAddedPeriod:", locallyAddedPeriod.value);
+//             }
+//           }
+
+          // ===== 开奖完成后延迟刷新历史接口，且调用时保留本地最新数据 =====
+          // 1. 开奖中（is_drawing = true）：绝对不调用 getdatalist()
+          // 2. 刚开奖完成（isDrawComplete = true）：延迟一段时间后调用，带标记保留本地数据          // 3. 其他时间且无号码：正常刷新
           if (data.is_drawing || sevenStarIsDrawing.value) {
             // 开奖中：不刷新历史接口，等待开奖完成
             console.log("开奖中：跳过 getdatalist，历史列表保持不变");
@@ -1282,6 +1348,20 @@ const getdatalist = async (isInt) => {
         }
       });
       
+      // ★★★ 关键修复：确保列表中最多只有一条七星彩记录显示"开奖中" ★★★
+      // 找到第一个 status=1 的记录，其余所有记录的 status 重置为 2
+      let foundDrawing = false;
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].lotteryType === 'QXC' && list[i].status === 1) {
+          if (!foundDrawing) {
+            foundDrawing = true;
+          } else {
+            // 已经找到一条开奖中的记录，其余重置为已开奖
+            list[i] = { ...list[i], status: 2, isDrawing: false };
+          }
+        }
+      }
+
       resultslist.value = list;
       total.value = totalCount;
       console.log("getdatalist 完成：resultslist.length =", resultslist.value.length, "total =", total.value);
