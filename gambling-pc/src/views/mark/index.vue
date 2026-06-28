@@ -129,11 +129,14 @@
         </ul>
       </div>
       <div class="w-[1px] h-[5rem] bg-slate-200"></div>
+
       <div class="w-[50%] px-[1.5rem] h-full flex justify-between items-center ">
-        <div v-if="isSevenStar ? sevenStarIsDrawing : isOpen('_openTime')&&(+winresultsinfo.status==1||isOpenBotKai)" 
+     
+        <div v-if="isSevenStar ? sevenStarIsDrawing: isOpen('_openTime')&&(+winresultsinfo.status==1||isOpenBotKai)" 
               class="w-[8.5rem] h-[2.5rem] bg-[#20b0cd] flex justify-center items-center text-white mx-[5px] margR20"
             >
-              {{isDrawStatus?'开奖中...':!isSevenStar?'开奖中...':'准备下一期'}}
+
+              {{!isSevenStar?'开奖中...':isDrawStatus?'开奖中...':'准备下一期'}}
             </div>
             <div v-else >
           <div class="text-[0.8rem]/[1.6rem] text-[#666]">
@@ -799,7 +802,8 @@ const getColors = (n) => {
   return str
 };
 const resFn = (x) => {
-  let numberarr = x.numbers?.split(",");
+  if(x.numbers){
+    let numberarr = x.numbers?.split(",");
         let sbarr = x.sb.split(",");
         let sxarr = x.sx.split(",");
         let ball = [];
@@ -823,7 +827,11 @@ const resFn = (x) => {
         // if(isOpen()&&ball.length==7&&+winresultsinfo.value.status!==1&&isOpenBotKai.value){
         //       //  x.ball = []
         // }
-         winresultsinfo.value = x;
+        
+         
+  }
+  winresultsinfo.value = x;
+  
 };
 const getNewData = async (s) => {
   let lotCode = categoryId.value.toLowerCase()
@@ -872,7 +880,8 @@ const getNewData = async (s) => {
         const wasDrawing = sevenStarIsDrawing.value;
         
         // 更新开奖中状态
-        sevenStarIsDrawing.value = data.is_drawing
+        console.log("sdf",data.all_20_numbers)
+        sevenStarIsDrawing.value = data.is_drawing&&data.numbers.length<20
 
         // ★★★ 关键修复：统一清理历史记录中过期的"开奖中"状态 ★★★
         // 确保任何时刻列表中最多只有一条七星彩记录显示"开奖中"
@@ -1153,7 +1162,7 @@ function getImageUrl(name) {
 const logo = computed(()=>{
    let url
   if(winresultsinfo.value.lotteryType){
-       url = getImageUrl(!['XM0','MO','HK'].includes(winresultsinfo.value.lotteryType)?'../../assets/QXC.png':`../../assets/${winresultsinfo.value.lotteryType}.png`)
+       url = getImageUrl(`../../assets/${winresultsinfo.value.lotteryType}.png`)
   }
 
   console.log("sd",url,winresultsinfo.value)
@@ -1187,7 +1196,7 @@ const isOpen = (K='_openTime',num)=>{
         console.log("sd=准备开奖了",winresultsinfo.value)
       }
       
-      if(hasOpenStatus.value&&winresultsinfo.value.period!==resultslist.value[0].period&& !hasPushNewResult.value&&(winresultsinfo.value.status==1||hasNewRes.value)){
+      if(hasOpenStatus.value&&resultslist.value&&resultslist.value[0]&&winresultsinfo.value.period!==resultslist.value[0].period&& !hasPushNewResult.value&&(winresultsinfo.value.status==1||hasNewRes.value)){
               hasPushNewResult.value = true
             resultslist.value.unshift(tableListFn(winresultsinfo.value))
              
@@ -1195,7 +1204,6 @@ const isOpen = (K='_openTime',num)=>{
       if(open&&isOpenBotKai.value&&hasOpenStatus.value&&((winresultsinfo.value.status==1&&winresultsinfo.value.ball&&winresultsinfo.value.ball.length<7))){
         isOpenBotKai.value = false
         
-
         console.log("sd=正在开奖中了",open)
 
       }
@@ -1314,7 +1322,7 @@ const getdatalist = async (isInt) => {
         // 把Flask后端数据转换为前端需要的格式
         const transformed = transformSevenStarData({
           data: {
-            numbers: x.numbers || [],
+            numbers: x.all_20_numbers || [],
             issue_number: x.issue_number,
             created_at: x.created_at,
             super_number: null,
@@ -1486,7 +1494,7 @@ const playback = (item) => {
 };
   const isDrawStatus = computed(()=>{
     console.log("isDrawStatus",winresultsinfo.value.ball)
-    return sevenStarIsDrawing.value&&winresultsinfo.value.ball.length<7
+    return sevenStarIsDrawing.value&&winresultsinfo.value.ball.length<7&&winresultsinfo.value.all_20_numbers.length<config.value.draw_count
   })
 // 倒计时
 const countdownTimeStr = (timestamp) => {
@@ -1569,11 +1577,16 @@ function startSevenStarCountdown(targetTimestamp) {
     sevenStarCountdownHours.value = String(Math.floor(total / 3600)).padStart(2, "00");
     sevenStarCountdownMinutes.value = String(Math.floor((total % 3600) / 60)).padStart(2, "00");
     sevenStarCountdownSeconds.value = String(total % 60).padStart(2, "00");
+  }else{
+    setTimeout(()=>{
+          getNewData(1);
+    },config.value.drawing_duration*1000+10)
   }
 
   sevenStarCountdownInterval = setInterval(() => {
     // 如果正在开奖中，不更新倒计时
     if (sevenStarIsDrawing.value) {
+
       return;
     }
     
