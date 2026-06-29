@@ -1179,7 +1179,7 @@ const getNewData = async (s) => {
           nextwinresultst.value = x;
           countdownTimeStr(nextwinresultst.value.date);
         } else {
-          if(+winresultsinfo.value.ball[0]!==+x.numbers.slice(0,1)&&!hasNewRes.value){
+          if(winresultsinfo.value.ball&&+winresultsinfo.value.ball[0]!==+x.numbers.slice(0,1)&&!hasNewRes.value){
              hasNewRes.value = true
 
           }
