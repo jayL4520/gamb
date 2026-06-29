@@ -25,6 +25,24 @@
 
         <!-- 七星彩专用显示 -->
         <div v-if="isSevenStar" class="mt-[1rem]">
+          <!-- 开盘状态提示 -->
+          <div class="mb-2 flex items-center gap-2">
+            <span v-if="sevenStarIsTradingOpen && sevenStarIsWithinTradingHours" 
+                  class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+              ✅ 开盘中
+            </span>
+            <span v-else-if="!sevenStarIsTradingOpen" 
+                  class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
+              ❌ 已关盘
+            </span>
+            <span v-else 
+                  class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+              ⏰ 休市中 ({{ sevenStarTradingStartTime }}-{{ sevenStarTradingEndTime }})
+            </span>
+            <span class="text-xs text-gray-500">
+              开盘时间: {{ sevenStarTradingStartTime }} ~ {{ sevenStarTradingEndTime }}
+            </span>
+          </div>
           <!-- 调试信息 -->
           <div v-if="true" style="display:none">
             <div>isSevenStar: {{ isSevenStar }}</div>
@@ -670,6 +688,11 @@ const hasPushNewResult = ref(false) // 是否已经推送过新结果到前端�
 // 滚动动画相关
 const sevenStarRollingBalls = ref([]) // 当前正在滚动的球索引
 const sevenStarIsFetching = false // 防止重复请求
+// 开盘状态
+const sevenStarIsTradingOpen = ref(true)
+const sevenStarTradingStartTime = ref('09:00')
+const sevenStarTradingEndTime = ref('23:59')
+const sevenStarIsWithinTradingHours = ref(true)
 
 // 倒计时相关
 let sevenStarCountdownInterval = null
@@ -874,6 +897,20 @@ const getNewData = async (s) => {
           sevenStarDrawCount.value = data.draw_count || 7
         } else {
           sevenStarDrawCount.value = 7 // 确保七星彩固定显示7个球
+        }
+        
+        // 更新开盘状态
+        if (data.is_trading_open !== undefined) {
+          sevenStarIsTradingOpen.value = data.is_trading_open
+        }
+        if (data.trading_start_time) {
+          sevenStarTradingStartTime.value = data.trading_start_time
+        }
+        if (data.trading_end_time) {
+          sevenStarTradingEndTime.value = data.trading_end_time
+        }
+        if (data.is_within_trading_hours !== undefined) {
+          sevenStarIsWithinTradingHours.value = data.is_within_trading_hours
         }
         
         // 保存之前的开奖状态，用于检测开奖完成
@@ -1494,7 +1531,7 @@ const playback = (item) => {
 };
   const isDrawStatus = computed(()=>{
     console.log("isDrawStatus",winresultsinfo.value.ball)
-    return sevenStarIsDrawing.value&&winresultsinfo.value.ball.length<7&&winresultsinfo.value.all_20_numbers.length<config.value.draw_count
+    return sevenStarIsDrawing.value&&winresultsinfo.value.ball.length<7
   })
 // 倒计时
 const countdownTimeStr = (timestamp) => {
@@ -1562,25 +1599,29 @@ const countdownTimeStr = (timestamp) => {
     }
   }, 1000);
 };
-
+let sevenStarKaiInterval = null
 // 七星彩倒计时函数
 function startSevenStarCountdown(targetTimestamp) {
   if (sevenStarCountdownInterval) {
     clearInterval(sevenStarCountdownInterval);
   }
-  
+  let now = Date.now();
+  let diff = Math.max(0, targetTimestamp * 1000 - now);
   // 立即更新一次倒计时显示
   if (!sevenStarIsDrawing.value) {
-    let now = Date.now();
-    let diff = Math.max(0, targetTimestamp * 1000 - now);
+    if (sevenStarKaiInterval) {
+    clearInterval(sevenStarKaiInterval);
+  }
     const total = Math.floor(diff / 1000);
     sevenStarCountdownHours.value = String(Math.floor(total / 3600)).padStart(2, "00");
     sevenStarCountdownMinutes.value = String(Math.floor((total % 3600) / 60)).padStart(2, "00");
     sevenStarCountdownSeconds.value = String(total % 60).padStart(2, "00");
   }else{
-    setTimeout(()=>{
+        if (diff <= 800) {
+   sevenStarKaiInterval =  setInterval(()=>{
           getNewData(1);
     },config.value.drawing_duration*1000+10)
+  }
   }
 
   sevenStarCountdownInterval = setInterval(() => {
@@ -1590,7 +1631,7 @@ function startSevenStarCountdown(targetTimestamp) {
       return;
     }
     
-    let now = Date.now();
+     let now = Date.now();
     let diff = Math.max(0, targetTimestamp * 1000 - now);
     const total = Math.floor(diff / 1000);
     sevenStarCountdownHours.value = String(Math.floor(total / 3600)).padStart(2, "00");
