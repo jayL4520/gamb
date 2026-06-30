@@ -1179,7 +1179,7 @@ const getNewData = async (s) => {
           nextwinresultst.value = x;
           countdownTimeStr(nextwinresultst.value.date);
         } else {
-          if(winresultsinfo.value.ball&&+winresultsinfo.value.ball[0]!==+x.numbers.slice(0,1)&&!hasNewRes.value){
+          if(winresultsinfo.value.ball?.length&&+winresultsinfo.value.ball[0]!==+x.numbers.slice(0,1)&&!hasNewRes.value){
              hasNewRes.value = true
 
           }
@@ -1226,7 +1226,7 @@ const isOpen = (K='_openTime',num)=>{
          isOpenBotKai.value = false
         return open
       }
-      if(open&&!isOpenBotKai.value&&!hasOpenStatus.value&&winresultsinfo.value.status==2){
+      if(open&&!isOpenBotKai.value&&!hasOpenStatus.value&&winresultsinfo.value.status==1){
         isOpenBotKai.value = true
         hasOpenStatus.value = true
         resFn(nextwinresultst.value)
