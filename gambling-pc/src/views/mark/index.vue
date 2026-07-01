@@ -43,6 +43,24 @@
               开盘时间: {{ sevenStarTradingStartTime }} ~ {{ sevenStarTradingEndTime }}
             </span>
           </div>
+          <!-- 休市遮罩层 -->
+          <!-- <div v-if="!sevenStarIsTradingOpen || !sevenStarIsWithinTradingHours" 
+               class="relative mb-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+            <div class="text-center">
+              <div class="text-2xl mb-2">
+                {{ !sevenStarIsTradingOpen ? '🔒' : '⏰' }}
+              </div>
+              <div class="text-gray-700 font-bold text-lg">
+                {{ !sevenStarIsTradingOpen ? '交易已关闭' : '休市时间' }}
+              </div>
+              <div class="text-gray-500 text-sm mt-1">
+                下次开盘时间：{{ sevenStarTradingStartTime }}
+              </div>
+              <div class="text-gray-400 text-xs mt-1">
+                交易时间：{{ sevenStarTradingStartTime }} ~ {{ sevenStarTradingEndTime }}
+              </div>
+            </div>
+          </div> -->
           <!-- 调试信息 -->
           <div v-if="true" style="display:none">
             <div>isSevenStar: {{ isSevenStar }}</div>
@@ -156,6 +174,16 @@
 
               {{!isSevenStar?'开奖中...':isDrawStatus?'开奖中...':'准备下一期'}}
             </div>
+            <!-- 七星彩休市状态 -->
+            <!-- <div v-else-if="isSevenStar && (!sevenStarIsTradingOpen || !sevenStarIsWithinTradingHours)" 
+                 class="w-auto h-auto px-4 py-2 bg-red-100 flex flex-col justify-center items-center text-red-700 mx-[5px] margR20 rounded-lg">
+              <div class="text-sm font-bold">
+                {{ !sevenStarIsTradingOpen ? '交易已关闭' : '休市中' }}
+              </div>
+              <div class="text-xs mt-1">
+                下次开盘: {{ sevenStarTradingStartTime }}
+              </div>
+            </div> -->
             <div v-else >
           <div class="text-[0.8rem]/[1.6rem] text-[#666]">
             距<span class="text-[red] px-[5px]"
@@ -1618,6 +1646,7 @@ function startSevenStarCountdown(targetTimestamp) {
     sevenStarCountdownSeconds.value = String(total % 60).padStart(2, "00");
   }else{
         if (diff <= 800) {
+          console.log("diff",diff)
    sevenStarKaiInterval =  setInterval(()=>{
           getNewData(1);
     },config.value.drawing_duration*1000+10)
